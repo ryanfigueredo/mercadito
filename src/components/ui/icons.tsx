@@ -59,7 +59,64 @@ export const UserIcon = createIcon(
   <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z" />
 );
 
-export default {
+export const IdIcon = createIcon(
+  <>
+    <rect
+      x="3"
+      y="5"
+      width="18"
+      height="14"
+      rx="2"
+      stroke="currentColor"
+      fill="none"
+    />
+    <circle cx="9" cy="12" r="2" />
+    <path d="M13 10h6M13 13h6M13 16h4" stroke="currentColor" fill="none" />
+  </>
+);
+
+// App specific icons
+export const HomeIcon = createIcon(
+  <path d="M12 3 2 12h3v8h6v-5h2v5h6v-8h3L12 3Z" />
+);
+
+export const GridIcon = createIcon(
+  <path d="M3 3h8v8H3V3Zm10 0h8v8h-8V3ZM3 13h8v8H3v-8Zm10 0h8v8h-8v-8Z" />
+);
+
+export const BagIcon = createIcon(
+  <>
+    <path d="M6 7h12l-1.5 12a2 2 0 0 1-2 1.8H9.5A2 2 0 0 1 7.5 19L6 7Z" />
+    <path d="M9 10V8a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" />
+  </>
+);
+
+// New icons for top bar and search
+export const MapPinIcon = createIcon(
+  <path d="M12 2C8.69 2 6 4.69 6 8c0 5 6 12 6 12s6-7 6-12c0-3.31-2.69-6-6-6Zm0 8.5A2.5 2.5 0 1 1 12 5.5a2.5 2.5 0 0 1 0 5Z" />
+);
+
+export const ChevronDownIcon = createIcon(
+  <path
+    d="M6 9l6 6 6-6"
+    stroke="currentColor"
+    strokeWidth="2"
+    fill="none"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />,
+  "0 0 24 24"
+);
+
+export const BellIcon = createIcon(
+  <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Zm-6 13a3 3 0 0 0 3-3H9a3 3 0 0 0 3 3Z" />
+);
+
+export const SearchIcon = createIcon(
+  <path d="M11 4a7 7 0 1 0 4.9 12l3.7 3.7 1.4-1.4-3.7-3.7A7 7 0 0 0 11 4Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z" />
+);
+
+const icons = {
   MailIcon,
   LockIcon,
   EyeIcon,
@@ -68,4 +125,14 @@ export default {
   FacebookIcon,
   GoogleIcon,
   UserIcon,
+  IdIcon,
+  HomeIcon,
+  GridIcon,
+  BagIcon,
+  MapPinIcon,
+  ChevronDownIcon,
+  BellIcon,
+  SearchIcon,
 };
+
+export default icons;

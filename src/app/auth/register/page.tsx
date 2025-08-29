@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import Icons, {
+import {
   MailIcon,
   LockIcon,
   EyeIcon,
@@ -15,12 +15,19 @@ import Icons, {
   FacebookIcon,
   GoogleIcon,
 } from "@/components/ui/icons";
+import { IdIcon } from "@/components/ui/icons";
+import { isValidCPF, stripCpfNonDigits } from "@/lib/cpf";
 
 const schema = z
   .object({
     firstName: z.string().min(2, "Informe seu nome"),
     lastName: z.string().min(2, "Informe seu sobrenome"),
     email: z.string().email("E-mail inválido"),
+    cpf: z
+      .string()
+      .transform((v) => stripCpfNonDigits(v))
+      .refine((v) => v.length === 11, { message: "CPF deve ter 11 dígitos" })
+      .refine((v) => isValidCPF(v), { message: "CPF inválido" }),
     password: z.string().min(6, "Mínimo de 6 caracteres"),
     confirm: z.string().min(6, "Confirme a senha"),
   })
@@ -84,6 +91,7 @@ export default function RegisterPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
   const onSubmit = (data: FormData) => {
@@ -107,6 +115,30 @@ export default function RegisterPage() {
           <h2 className="h-title mb-3">Cadastre-se</h2>
 
           <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
+            <Field label="CPF" id="cpf" error={errors.cpf?.message}>
+              <TextInput
+                id="cpf"
+                inputMode="numeric"
+                placeholder="000.000.000-00"
+                left={<IdIcon />}
+                maxLength={14}
+                onInput={(e) => {
+                  const input = e.currentTarget as HTMLInputElement;
+                  const digits = input.value.replace(/\D+/g, "").slice(0, 11);
+                  const masked = digits
+                    .replace(/(\d{3})(\d)/, "$1.$2")
+                    .replace(/(\d{3})(\d)/, "$1.$2")
+                    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+                  setValue("cpf", masked as unknown as string, {
+                    shouldValidate: true,
+                  });
+                  input.value = masked;
+                }}
+                error={!!errors.cpf}
+                aria-invalid={!!errors.cpf}
+                {...register("cpf")}
+              />
+            </Field>
             <Field
               label="Nome"
               id="firstName"
