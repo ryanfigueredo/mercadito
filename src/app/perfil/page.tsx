@@ -1,8 +1,144 @@
-export default function PerfilPage() {
+import Topbar from "@/components/Topbar";
+import Link from "next/link";
+import Image from "next/image";
+import { prisma } from "@/lib/prisma";
+import {
+  PencilIcon,
+  CreditCardIcon,
+  MapPinIcon,
+  SettingsIcon,
+  ShieldIcon,
+  FileTextIcon,
+  HelpCircleIcon,
+  LogOutIcon,
+} from "@/components/ui/icons";
+
+type IconComponent = (props: {
+  size?: number;
+  className?: string;
+}) => React.ReactElement;
+
+function MenuItem({
+  href,
+  Icon,
+  label,
+}: {
+  href: string;
+  Icon: IconComponent;
+  label: string;
+}) {
   return (
-    <main className="mx-auto max-w-sm px-4 py-6">
-      <h1 className="h-title">Perfil</h1>
-      <p className="text-sm text-muted">Edite suas informações e pagamento.</p>
-    </main>
+    <Link
+      href={href}
+      className="flex items-center gap-3 p-4 hover:bg-gray-50 focus:bg-gray-50"
+    >
+      <Icon size={18} className="text-muted" />
+      <span className="flex-1">{label}</span>
+      <span className="text-muted">›</span>
+    </Link>
+  );
+}
+
+export default async function PerfilPage() {
+  // FIXME: replace with real auth session. Using dev seed user for now.
+  const user = await prisma.user.findUnique({
+    where: { email: "dev@mercadito.local" },
+    include: { addresses: true },
+  });
+
+  const primaryAddress = user?.addresses[0];
+  const addressLine = primaryAddress
+    ? `${primaryAddress.street}, ${primaryAddress.city}`
+    : undefined;
+
+  return (
+    <div className="min-h-dvh">
+      <Topbar isLogged={!!user} address={addressLine} />
+      <main className="mx-auto max-w-sm px-4 py-6">
+        <h1 className="h-title mb-3">Meu Perfil</h1>
+
+        {!user && (
+          <div className="rounded-2xl border p-4">
+            <p className="text-sm text-muted">Você não está logado.</p>
+            <Link
+              href="/auth/login"
+              className="mt-2 inline-block font-semibold text-brand-600"
+            >
+              Fazer login
+            </Link>
+          </div>
+        )}
+
+        {user && (
+          <>
+            <section className="relative overflow-hidden rounded-2xl bg-brand-50">
+              <div className="p-4 flex items-center gap-3">
+                <div className="h-16 w-16 rounded-full overflow-hidden bg-gray-200">
+                  <Image
+                    src="/next.svg"
+                    alt="avatar"
+                    width={64}
+                    height={64}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-semibold truncate">{user.name}</p>
+                  <p className="text-sm text-muted truncate">{user.email}</p>
+                </div>
+              </div>
+            </section>
+
+            <nav className="mt-4 rounded-2xl border divide-y">
+              <MenuItem
+                href="/perfil/editar"
+                Icon={PencilIcon}
+                label="Editar Perfil"
+              />
+              <MenuItem
+                href="/perfil/pagamentos"
+                Icon={CreditCardIcon}
+                label="Métodos de Pagamento"
+              />
+              <MenuItem
+                href="/perfil/enderecos"
+                Icon={MapPinIcon}
+                label="Endereços"
+              />
+              <MenuItem
+                href="/perfil/configuracoes"
+                Icon={SettingsIcon}
+                label="Configurações"
+              />
+              <MenuItem
+                href="/perfil/privacidade"
+                Icon={ShieldIcon}
+                label="Privacidade"
+              />
+              <MenuItem
+                href="/perfil/termos"
+                Icon={FileTextIcon}
+                label="Termos e Condições"
+              />
+              <MenuItem
+                href="/perfil/ajuda"
+                Icon={HelpCircleIcon}
+                label="Ajuda e Suporte"
+              />
+              <MenuItem href="/auth/login" Icon={LogOutIcon} label="Sair" />
+            </nav>
+
+            <div className="mt-4">
+              <Link
+                href="/admin"
+                className="inline-flex items-center justify-center h-11 px-4 rounded-2xl border border-gray-300 bg-white text-sm"
+              >
+                Acessar Admin
+              </Link>
+            </div>
+          </>
+        )}
+      </main>
+    </div>
   );
 }

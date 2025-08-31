@@ -116,6 +116,34 @@ export const SearchIcon = createIcon(
   <path d="M11 4a7 7 0 1 0 4.9 12l3.7 3.7 1.4-1.4-3.7-3.7A7 7 0 0 0 11 4Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z" />
 );
 
+// Additional icons for perfil area
+export const PencilIcon = createIcon(
+  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Zm2.92 2.83H5v-.92l8.06-8.06.92.92L5.92 20.08ZM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83Z" />
+);
+
+export const CreditCardIcon = createIcon(
+  <path d="M3 5h18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm18 4H2V7a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1v2ZM3 13h6v2H3v-2Z" />
+);
+
+export const SettingsIcon = createIcon(
+  <path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.08 7.08 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.57.22-1.11.52-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.65 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94L2.77 15.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.51.41 1.06.74 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.57-.21 1.11-.53 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" />
+);
+
+export const ShieldIcon = createIcon(
+  <path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Zm0 18.3C8.86 18.3 6.5 15.4 6.5 12V6.14L12 4.3l5.5 1.84V12c0 3.4-2.36 6.3-5.5 8.3Z" />
+);
+
+export const FileTextIcon = createIcon(
+  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Zm1 18H7V4h6v5h5v11ZM8 13h8v2H8v-2Zm0 4h8v2H8v-2Zm0-8h5v2H8V9Z" />
+);
+
+export const HelpCircleIcon = createIcon(
+  <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm1 15h-2v-2h2v2Zm2.07-7.75-.9.92A3.49 3.49 0 0 0 13 13h-2v-.5a5.5 5.5 0 0 1 1.61-3.89l1.2-1.2a1.75 1.75 0 1 0-2.96-1.24H9a3.75 3.75 0 1 1 6.07 2.98Z" />
+);
+
+export const LogOutIcon = createIcon(
+  <path d="M16 13v-2H7V8L3 12l4 4v-3h9Zm1-10H11a2 2 0 0 0-2 2v3h2V5h6v14h-6v-3H9v3a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z" />
+);
 const icons = {
   MailIcon,
   LockIcon,
@@ -133,6 +161,13 @@ const icons = {
   ChevronDownIcon,
   BellIcon,
   SearchIcon,
+  PencilIcon,
+  CreditCardIcon,
+  SettingsIcon,
+  ShieldIcon,
+  FileTextIcon,
+  HelpCircleIcon,
+  LogOutIcon,
 };
 
 export default icons;

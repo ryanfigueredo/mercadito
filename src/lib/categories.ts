@@ -5,20 +5,18 @@ export type CategoryInfo = {
 };
 
 export const categories: CategoryInfo[] = [
-  { slug: "acougue", name: "Açougue", image: "/categories/acougue.jpg" },
-  { slug: "graos", name: "Grãos", image: "/categories/graos.jpg" },
+  { slug: "acougue", name: "Açougue", image: "/acougue.png" },
+  { slug: "graos", name: "Grãos", image: "/graos.png" },
   {
     slug: "frutas-verduras",
     name: "Frutas e Verduras",
-    image: "/categories/frutas-verduras.jpg",
+    image: "/frutas.png",
   },
-  { slug: "higiene", name: "Higiene", image: "/categories/higiene.jpg" },
-  { slug: "limpeza", name: "Limpeza", image: "/categories/limpeza.jpg" },
-  { slug: "diversos", name: "Diversos", image: "/categories/diversos.jpg" },
+  { slug: "higiene", name: "Higiene", image: "/higiene.png" },
+  { slug: "limpeza", name: "Limpeza", image: "/limpeza.png" },
+  { slug: "diversos", name: "Diversos", image: "/diversos.png" },
 ];
 
 export function getCategoryBySlug(slug: string): CategoryInfo | undefined {
   return categories.find((c) => c.slug === slug);
 }
-
-
