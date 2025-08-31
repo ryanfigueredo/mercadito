@@ -2,6 +2,8 @@ import Topbar from "@/components/Topbar";
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import {
   PencilIcon,
   CreditCardIcon,
@@ -12,6 +14,8 @@ import {
   HelpCircleIcon,
   LogOutIcon,
 } from "@/components/ui/icons";
+import { signOut } from "next-auth/react";
+import { redirect } from "next/navigation";
 
 type IconComponent = (props: {
   size?: number;
@@ -40,24 +44,30 @@ function MenuItem({
 }
 
 export default async function PerfilPage() {
-  // FIXME: replace with real auth session. Using dev seed user for now.
-  const user = await prisma.user.findUnique({
-    where: { email: "dev@mercadito.local" },
-    include: { addresses: true },
-  });
+  const session = await getServerSession(authOptions);
+  const dbUser = session?.user?.email
+    ? await prisma.user.findUnique({
+        where: { email: session.user.email },
+        include: { addresses: true },
+      })
+    : null;
 
-  const primaryAddress = user?.addresses[0];
+  if (!dbUser) {
+    redirect("/auth/login");
+  }
+
+  const primaryAddress = dbUser?.addresses[0];
   const addressLine = primaryAddress
     ? `${primaryAddress.street}, ${primaryAddress.city}`
     : undefined;
 
   return (
     <div className="min-h-dvh">
-      <Topbar isLogged={!!user} address={addressLine} />
+      <Topbar isLogged={!!dbUser} address={addressLine} />
       <main className="mx-auto max-w-sm px-4 py-6">
         <h1 className="h-title mb-3">Meu Perfil</h1>
 
-        {!user && (
+        {!dbUser && (
           <div className="rounded-2xl border p-4">
             <p className="text-sm text-muted">Você não está logado.</p>
             <Link
@@ -69,7 +79,7 @@ export default async function PerfilPage() {
           </div>
         )}
 
-        {user && (
+        {dbUser && (
           <>
             <section className="relative overflow-hidden rounded-2xl bg-brand-50">
               <div className="p-4 flex items-center gap-3">
@@ -83,8 +93,8 @@ export default async function PerfilPage() {
                   />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold truncate">{user.name}</p>
-                  <p className="text-sm text-muted truncate">{user.email}</p>
+                  <p className="font-semibold truncate">{dbUser.name}</p>
+                  <p className="text-sm text-muted truncate">{dbUser.email}</p>
                 </div>
               </div>
             </section>
@@ -125,7 +135,11 @@ export default async function PerfilPage() {
                 Icon={HelpCircleIcon}
                 label="Ajuda e Suporte"
               />
-              <MenuItem href="/auth/login" Icon={LogOutIcon} label="Sair" />
+              <MenuItemButton
+                onClick={() => signOut({ callbackUrl: "/" })}
+                Icon={LogOutIcon}
+                label="Sair"
+              />
             </nav>
 
             <div className="mt-4">
@@ -140,5 +154,27 @@ export default async function PerfilPage() {
         )}
       </main>
     </div>
+  );
+}
+
+function MenuItemButton({
+  onClick,
+  Icon,
+  label,
+}: {
+  onClick: () => void;
+  Icon: IconComponent;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full text-left flex items-center gap-3 p-4 hover:bg-gray-50 focus:bg-gray-50"
+    >
+      <Icon size={18} className="text-muted" />
+      <span className="flex-1">{label}</span>
+      <span className="text-muted">›</span>
+    </button>
   );
 }

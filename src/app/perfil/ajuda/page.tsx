@@ -1,12 +1,17 @@
 import Topbar from "@/components/Topbar";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export default async function AjudaPage() {
-  const user = await prisma.user.findUnique({
-    where: { email: "dev@mercadito.local" },
-    include: { addresses: true },
-  });
+  const session = await getServerSession(authOptions);
+  const user = session?.user?.email
+    ? await prisma.user.findUnique({
+        where: { email: session.user.email },
+        include: { addresses: true },
+      })
+    : null;
 
   const primaryAddress = user?.addresses[0];
   const addressLine = primaryAddress

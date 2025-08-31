@@ -6,6 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import { Input } from "@/components/ui/input";
 import { SearchIcon } from "@/components/ui/icons";
 import { products, applyFilter, type FilterKey } from "@/lib/products";
+import CartFab from "@/components/CartFab";
 
 const filters: FilterKey[] = ["Tudo", "Menor Preço", "Ordem Alfabética"];
 
@@ -61,6 +62,7 @@ export default function Home() {
           </div>
         </section>
       </main>
+      <CartFab />
     </div>
   );
 }

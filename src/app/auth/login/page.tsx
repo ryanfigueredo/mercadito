@@ -77,8 +77,15 @@ export default function LoginPage() {
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
-  const onSubmit = (data: FormData) => {
-    console.log("login", data);
+  const onSubmit = async (data: FormData) => {
+    const { signIn } = await import("next-auth/react");
+    const res = await signIn("credentials", {
+      email: data.email,
+      password: data.password,
+      redirect: true,
+      callbackUrl: "/perfil",
+    });
+    return res;
   };
 
   return (

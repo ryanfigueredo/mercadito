@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Topbar from "@/components/Topbar";
 import { products } from "@/lib/products";
 import BuyNowButton from "@/components/BuyNowButton";
+import AddToCart from "@/components/AddToCart";
 
 export default async function ProductPage({
   params,
@@ -38,6 +39,11 @@ export default async function ProductPage({
             id={product.id}
             name={product.name}
             unit_price={product.price}
+          />
+          <AddToCart
+            id={product.id}
+            name={product.name}
+            price={product.price}
           />
         </div>
       </main>

@@ -1,12 +1,34 @@
 import Topbar from "@/components/Topbar";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export default async function EditarPerfilPage() {
-  const user = await prisma.user.findUnique({
-    where: { email: "dev@mercadito.local" },
-    include: { addresses: true },
-  });
+  const session = await getServerSession(authOptions);
+  const user = session?.user?.email
+    ? await prisma.user.findUnique({
+        where: { email: session.user.email },
+        include: { addresses: true },
+      })
+    : null;
+
+  if (!user) {
+    return (
+      <div className="min-h-dvh">
+        <Topbar isLogged={false} />
+        <main className="mx-auto max-w-sm px-4 py-6">
+          <p className="text-sm">Faça login para editar seu perfil.</p>
+          <Link
+            href="/auth/login"
+            className="mt-2 inline-block font-semibold text-brand-600"
+          >
+            Login
+          </Link>
+        </main>
+      </div>
+    );
+  }
 
   const primaryAddress = user?.addresses[0];
   const addressLine = primaryAddress
