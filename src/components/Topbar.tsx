@@ -4,8 +4,8 @@ import Link from "next/link";
 import { BellIcon } from "@/components/ui/icons";
 
 export default function Topbar({
-  address,
-  isLogged,
+  address: _address,
+  isLogged: _isLogged,
 }: {
   address?: string;
   isLogged?: boolean;

@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPreferenceClient } from "@/lib/mercadopago";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
     type RequestItem = {
       productId?: string;
       title: string;
@@ -19,16 +25,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // DEV: create/find a user to own the order (substituir por usuário logado)
-    const user = await prisma.user.upsert({
-      where: { email: "dev@mercadito.local" },
-      create: {
-        email: "dev@mercadito.local",
-        name: "Cliente Dev",
-        password: "dev",
-      },
-      update: {},
+    // Real user from session
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
     });
+    if (!user) {
+      return NextResponse.json({ error: "user_not_found" }, { status: 401 });
+    }
 
     // Upsert products by slug (we use client-side id as slug)
     let itemsTotalCents = 0;

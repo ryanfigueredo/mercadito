@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useSession } from "next-auth/react";
 
 export default function BuyNowButton({
   id,
@@ -12,9 +13,15 @@ export default function BuyNowButton({
   unit_price: number;
 }) {
   const [loading, setLoading] = useState(false);
+  const { status } = useSession();
   const onClick = async () => {
     setLoading(true);
     try {
+      if (status !== "authenticated") {
+        const cb = encodeURIComponent(`/product/${id}`);
+        window.location.href = `/auth/login?callbackUrl=${cb}`;
+        return;
+      }
       const res = await fetch("/api/checkout/preference", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

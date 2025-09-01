@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export default async function ConfiguracoesPage() {
   const session = await getServerSession(authOptions);
@@ -14,20 +15,7 @@ export default async function ConfiguracoesPage() {
     : null;
 
   if (!user) {
-    return (
-      <div className="min-h-dvh">
-        <Topbar isLogged={false} />
-        <main className="mx-auto max-w-sm px-4 py-6">
-          <p className="text-sm">Faça login para acessar configurações.</p>
-          <Link
-            href="/auth/login"
-            className="mt-2 inline-block font-semibold text-brand-600"
-          >
-            Login
-          </Link>
-        </main>
-      </div>
-    );
+    redirect("/auth/login");
   }
 
   const primaryAddress = user?.addresses[0];

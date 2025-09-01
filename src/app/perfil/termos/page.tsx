@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export default async function TermosPage() {
   const session = await getServerSession(authOptions);
@@ -12,6 +13,10 @@ export default async function TermosPage() {
         include: { addresses: true },
       })
     : null;
+
+  if (!user) {
+    redirect("/auth/login");
+  }
 
   const primaryAddress = user?.addresses[0];
   const addressLine = primaryAddress

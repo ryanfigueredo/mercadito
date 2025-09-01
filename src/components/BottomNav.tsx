@@ -2,16 +2,21 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HomeIcon, GridIcon, BagIcon, UserIcon } from "@/components/ui/icons";
+import { ShoppingCart } from "lucide-react";
+import { useCart } from "@/lib/cart";
 
 const items = [
   { href: "/", label: "Home", Icon: HomeIcon },
   { href: "/categorias", label: "Categorias", Icon: GridIcon },
+  // Novo item do carrinho
+  { href: "/checkout", label: "Carrinho", Icon: ShoppingCart },
   { href: "/pedidos", label: "Pedidos", Icon: BagIcon },
   { href: "/perfil", label: "Perfil", Icon: UserIcon },
 ] as const;
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const count = useCart((s) => s.items.reduce((n, i) => n + i.qty, 0));
 
   return (
     <nav className="fixed bottom-0 inset-x-0 border-t bg-white text-black dark:bg-card dark:text-foreground z-40">
@@ -29,10 +34,17 @@ export default function BottomNav() {
                     : " text-black dark:text-foreground")
                 }
               >
-                <Icon
-                  size={22}
-                  className={active ? "text-brand-600" : undefined}
-                />
+                <span className="relative inline-flex">
+                  <Icon
+                    size={22}
+                    className={active ? "text-brand-600" : undefined}
+                  />
+                  {label === "Carrinho" && count > 0 && (
+                    <span className="absolute -top-1 -right-2 h-5 min-w-[20px] rounded-full bg-brand-600 px-1 text-[11px] leading-5 text-white text-center">
+                      {count}
+                    </span>
+                  )}
+                </span>
                 <span>{label}</span>
               </Link>
             </li>

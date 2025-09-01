@@ -1,7 +1,15 @@
+"use client";
 import Link from "next/link";
 import { Product } from "@/lib/products";
+import { useCart } from "@/lib/cart";
 
 export default function ProductCard({ product }: { product: Product }) {
+  const add = useCart((s) => s.add);
+  const inc = useCart((s) => s.inc);
+  const dec = useCart((s) => s.dec);
+  const qty = useCart(
+    (s) => s.items.find((i) => i.id === product.id)?.qty ?? 0
+  );
   return (
     <Link
       href={`/product/${product.id}`}
@@ -20,6 +28,55 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
         )}
         <p className="mt-1 font-semibold">R$ {product.price.toFixed(2)}</p>
+        {qty <= 0 ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              add(
+                { id: product.id, name: product.name, price: product.price },
+                1
+              );
+            }}
+            className="mt-2 w-full rounded-2xl border border-gray-300 py-2 text-sm"
+          >
+            Adicionar
+          </button>
+        ) : (
+          <div className="mt-2 flex items-center justify-between rounded-2xl border border-gray-300">
+            <button
+              type="button"
+              className="h-10 w-12 text-lg"
+              onClick={(e) => {
+                e.preventDefault();
+                dec(product.id);
+              }}
+            >
+              −
+            </button>
+            <button
+              type="button"
+              aria-label="Abrir carrinho"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = "/checkout";
+              }}
+              className="px-2 text-sm underline underline-offset-2"
+            >
+              {qty}
+            </button>
+            <button
+              type="button"
+              className="h-10 w-12 text-lg"
+              onClick={(e) => {
+                e.preventDefault();
+                inc(product.id);
+              }}
+            >
+              +
+            </button>
+          </div>
+        )}
       </div>
     </Link>
   );

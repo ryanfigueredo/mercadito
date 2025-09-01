@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 import { useCart } from "@/lib/cart";
 import Topbar from "@/components/Topbar";
 import Link from "next/link";
@@ -8,11 +9,26 @@ export default function CheckoutPage() {
   const items = useCart((s) => s.items);
   const total = useCart((s) => s.total());
   const clear = useCart((s) => s.clear);
+  const inc = useCart((s) => s.inc);
+  const dec = useCart((s) => s.dec);
 
   return (
     <div className="min-h-dvh">
-      <Topbar isLogged={false} />
+      <Topbar />
       <main className="mx-auto max-w-sm px-4 pb-24">
+        <div className="mt-4 rounded-2xl border border-brand-500 p-3 bg-brand-50">
+          <p className="text-sm">
+            Entre na sua conta para finalizar a compra.
+            <Link
+              href={`/auth/login?callbackUrl=${encodeURIComponent(
+                "/checkout"
+              )}`}
+              className="ml-2 font-semibold text-brand-600 underline"
+            >
+              Fazer login
+            </Link>
+          </p>
+        </div>
         <h1 className="h-title mt-4">Resumo</h1>
         <div className="mt-3 rounded-2xl border bg-white">
           {items.length === 0 && (
@@ -21,15 +37,38 @@ export default function CheckoutPage() {
           {items.map((i) => (
             <div
               key={i.id}
-              className="flex items-center justify-between p-4 border-b last:border-none"
+              className="flex items-center justify-between p-4 border-b last:border-none gap-3"
             >
-              <div>
-                <p className="font-medium">{i.name}</p>
-                <p className="text-sm text-muted">
-                  {i.qty} x R$ {i.price.toFixed(2)}
+              <div className="min-w-0">
+                <p className="font-medium truncate">{i.name}</p>
+                <p className="text-sm text-muted">R$ {i.price.toFixed(2)}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center rounded-xl border border-gray-300">
+                  <button
+                    type="button"
+                    aria-label="Diminuir"
+                    className="h-8 w-8"
+                    onClick={() => dec(i.id)}
+                  >
+                    −
+                  </button>
+                  <span className="px-2 text-sm min-w-[20px] text-center">
+                    {i.qty}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label="Aumentar"
+                    className="h-8 w-8"
+                    onClick={() => inc(i.id)}
+                  >
+                    +
+                  </button>
+                </div>
+                <p className="font-semibold min-w-[90px] text-right">
+                  R$ {(i.qty * i.price).toFixed(2)}
                 </p>
               </div>
-              <p className="font-semibold">R$ {(i.qty * i.price).toFixed(2)}</p>
             </div>
           ))}
         </div>
