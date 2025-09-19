@@ -17,6 +17,8 @@ model User {
   name      String
   email     String    @unique
   password  String
+  document  String?   // CPF/CNPJ para Pagar.me
+  phone     String?   // Telefone para Pagar.me
   addresses Address[]
   orders    Order[]
   createdAt DateTime  @default(now())
@@ -48,14 +50,19 @@ model Product {
 }
 
 model Order {
-  id         String       @id @default(cuid())
-  user       User         @relation(fields: [userId], references: [id])
-  userId     String
-  status     OrderStatus  @default(PENDING)
-  totalCents Int
-  items      OrderItem[]
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  id              String       @id @default(cuid())
+  user            User         @relation(fields: [userId], references: [id])
+  userId          String
+  status          OrderStatus  @default(PENDING)
+  totalCents      Int
+  items           OrderItem[]
+  paymentMethod   String?      // 'pagarme_pix', 'pagarme_credit'
+  pagarmeOrderId  String?      // ID do pedido no Pagar.me
+  pagarmeChargeId String?      // ID da cobrança no Pagar.me
+  pixQrCode       String?      // QR Code PIX
+  pixQrCodeUrl    String?      // URL do QR Code PIX
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 }
 
 model OrderItem {

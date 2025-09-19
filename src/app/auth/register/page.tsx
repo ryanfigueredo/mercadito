@@ -28,6 +28,7 @@ const schema = z
       .transform((v) => stripCpfNonDigits(v))
       .refine((v) => v.length === 11, { message: "CPF deve ter 11 dígitos" })
       .refine((v) => isValidCPF(v), { message: "CPF inválido" }),
+    phone: z.string().min(10, "Telefone deve ter pelo menos 10 dígitos"),
     password: z.string().min(6, "Mínimo de 6 caracteres"),
     confirm: z.string().min(6, "Confirme a senha"),
   })
@@ -94,8 +95,39 @@ export default function RegisterPage() {
     setValue,
     formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
-  const onSubmit = (data: FormData) => {
-    console.log("register", data);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const onSubmit = async (data: FormData) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Erro ao criar conta");
+      }
+
+      setSuccess(true);
+
+      // Redirecionar para login após 2 segundos
+      setTimeout(() => {
+        window.location.href =
+          "/auth/login?message=Conta criada com sucesso! Faça login.";
+      }, 2000);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro ao criar conta");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -113,6 +145,20 @@ export default function RegisterPage() {
       <div className="auth-surface">
         <div className="card p-4">
           <h2 className="h-title mb-3">Cadastre-se</h2>
+
+          {success && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-600 text-sm">
+                ✅ Conta criada com sucesso! Redirecionando...
+              </p>
+            </div>
+          )}
+
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">❌ {error}</p>
+            </div>
+          )}
 
           <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
             <Field label="CPF" id="cpf" error={errors.cpf?.message}>
@@ -181,6 +227,30 @@ export default function RegisterPage() {
               />
             </Field>
 
+            <Field label="Telefone" id="phone" error={errors.phone?.message}>
+              <TextInput
+                id="phone"
+                type="tel"
+                placeholder="(11) 99999-9999"
+                left={<span className="text-muted">📱</span>}
+                maxLength={15}
+                onInput={(e) => {
+                  const input = e.currentTarget as HTMLInputElement;
+                  const digits = input.value.replace(/\D+/g, "").slice(0, 11);
+                  const masked = digits
+                    .replace(/(\d{2})(\d)/, "($1) $2")
+                    .replace(/(\d{5})(\d)/, "$1-$2");
+                  setValue("phone", masked as unknown as string, {
+                    shouldValidate: true,
+                  });
+                  input.value = masked;
+                }}
+                error={!!errors.phone}
+                aria-invalid={!!errors.phone}
+                {...register("phone")}
+              />
+            </Field>
+
             <Field
               label="Digite sua senha"
               id="password"
@@ -233,8 +303,8 @@ export default function RegisterPage() {
               />
             </Field>
 
-            <Button className="w-full" type="submit">
-              Criar conta
+            <Button className="w-full" type="submit" disabled={loading}>
+              {loading ? "Criando conta..." : "Criar conta"}
             </Button>
 
             {/* Separador */}

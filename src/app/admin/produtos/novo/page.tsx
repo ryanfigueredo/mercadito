@@ -32,7 +32,12 @@ export default function NewProductPage() {
 
   return (
     <div>
-      <h1 className="h-title mb-3">Novo produto</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="h-title">Novo produto</h1>
+        <Button variant="outline" asChild>
+          <a href="/admin/produtos/importar">Importar Excel</a>
+        </Button>
+      </div>
       <form className="space-y-3" onSubmit={submit}>
         <Input
           placeholder="Nome"

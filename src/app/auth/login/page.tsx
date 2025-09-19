@@ -72,20 +72,38 @@ function TextInput(
 
 export default function LoginPage() {
   const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
+
   const onSubmit = async (data: FormData) => {
-    const { signIn } = await import("next-auth/react");
-    const res = await signIn("credentials", {
-      email: data.email,
-      password: data.password,
-      redirect: true,
-      callbackUrl: "/perfil",
-    });
-    return res;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { signIn } = await import("next-auth/react");
+      const res = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+        callbackUrl: "/perfil",
+      });
+
+      if (res?.error) {
+        setError("E-mail ou senha incorretos");
+      } else if (res?.ok) {
+        window.location.href = "/perfil";
+      }
+    } catch {
+      setError("Erro ao fazer login");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -103,6 +121,12 @@ export default function LoginPage() {
       <div className="auth-surface">
         <div className="card p-4">
           <h2 className="h-title mb-3">Login</h2>
+
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">❌ {error}</p>
+            </div>
+          )}
 
           <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
             <Field label="E-mail" id="email" error={errors.email?.message}>
@@ -153,8 +177,8 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <Button className="w-full" type="submit">
-              Entrar
+            <Button className="w-full" type="submit" disabled={loading}>
+              {loading ? "Entrando..." : "Entrar"}
             </Button>
 
             {/* Separador */}
