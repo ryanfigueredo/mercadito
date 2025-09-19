@@ -28,16 +28,17 @@ function BottomNavContent() {
             <li key={href} className="flex items-center justify-center">
               <Link
                 href={href}
-                className={`flex flex-col items-center justify-center gap-1 text-xs transition-all duration-200 ${
-                  active
-                    ? "text-brand-500 scale-105"
-                    : "text-muted hover:text-text"
-                }`}
+                className={
+                  "flex flex-col items-center justify-center gap-1 text-xs transition-colors" +
+                  (active
+                    ? " text-brand-600"
+                    : " text-black dark:text-foreground")
+                }
               >
                 <span className="relative inline-flex">
                   <Icon
                     size={24}
-                    className={active ? "text-brand-500" : "text-muted"}
+                    className={active ? "text-brand-600" : undefined}
                   />
                   {label === "Carrinho" && count > 0 && (
                     <span className="absolute -top-2 -right-2 h-5 min-w-[20px] rounded-full bg-error text-white text-[10px] font-bold flex items-center justify-center">
@@ -45,9 +46,7 @@ function BottomNavContent() {
                     </span>
                   )}
                 </span>
-                <span className={active ? "font-semibold" : "font-medium"}>
-                  {label}
-                </span>
+                <span>{label}</span>
               </Link>
             </li>
           );

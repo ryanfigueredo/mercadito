@@ -25,37 +25,27 @@ export default function Home() {
   }, [active, query]);
 
   return (
-    <div className="min-h-dvh bg-bg">
+    <div className="min-h-dvh">
       <Topbar isLogged={false} />
-      <main className="mx-auto max-w-sm px-4 pb-24">
-        {/* Search Bar */}
-        <div className="mt-4">
-          <div className="relative">
-            <Input
-              left={<SearchIcon />}
-              placeholder="Busque por um item ou categoria"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="bg-card border-border shadow-card"
-            />
-          </div>
+      <main className="mx-auto max-w-sm px-4 pb-20">
+        <div className="mt-3">
+          <Input
+            left={<SearchIcon />}
+            placeholder="Busque por um item ou categoria"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
         </div>
 
-        {/* Featured Carousel */}
-        <div className="mt-6">
-          <FeaturedCarousel />
-        </div>
+        <FeaturedCarousel />
 
-        {/* Filters */}
-        <div className="mt-6 flex items-center gap-3 overflow-x-auto no-scrollbar pb-2">
+        <div className="mt-4 flex items-center gap-3 overflow-x-auto no-scrollbar">
           {filters.map((f) => (
             <button
               key={f}
               onClick={() => setActive(f)}
-              className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
-                active === f 
-                  ? "bg-brand-500 text-white shadow-md" 
-                  : "bg-card text-muted border border-border hover:border-brand-400 hover:text-brand-500"
+              className={`shrink-0 rounded-full px-3 py-2 text-sm ${
+                active === f ? "bg-brand-600 text-white" : "bg-gray-100"
               }`}
             >
               {f}
@@ -63,24 +53,13 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Products Section */}
-        <section className="mt-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-text">Produtos</h2>
-            <span className="text-sm text-muted">{list.length} produtos</span>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+        <section className="mt-3">
+          <h2 className="sr-only">Ofertas do dia</h2>
+          <div className="grid grid-cols-2 gap-3">
             {list.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
-          {list.length === 0 && (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-lg font-semibold text-muted mb-2">Nenhum produto encontrado</h3>
-              <p className="text-sm text-muted">Tente ajustar sua busca ou filtros</p>
-            </div>
-          )}
         </section>
       </main>
       <CartFab />

@@ -26,20 +26,9 @@ function CartFabContent() {
   return (
     <button
       onClick={handleCheckout}
-      className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 bg-brand-500 hover:bg-brand-600 text-white px-6 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-3 font-medium min-w-[200px] justify-center"
+      className="fixed bottom-16 left-1/2 -translate-x-1/2 z-40 rounded-full bg-brand-600 text-white px-5 py-3 shadow-lg hover:bg-brand-700 transition-colors"
     >
-      <div className="relative">
-        <span className="text-xl">🛒</span>
-        {items.length > 0 && (
-          <span className="absolute -top-2 -right-2 bg-error text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-            {items.length}
-          </span>
-        )}
-      </div>
-      <div className="text-left">
-        <div className="text-sm">Ver carrinho</div>
-        <div className="text-xs opacity-90">{items.length} itens • R$ {total.toFixed(2)}</div>
-      </div>
+      Ver carrinho • {items.length} itens • R$ {total.toFixed(2)}
     </button>
   );
 }
