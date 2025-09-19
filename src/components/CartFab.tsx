@@ -10,6 +10,9 @@ export default function CartFab() {
   const { status } = useSession();
   const router = useRouter();
 
+  // Debug: log cart items
+  console.log('CartFab - items:', items, 'total:', total);
+
   if (items.length === 0) return null;
 
   const handleCheckout = () => {
