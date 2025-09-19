@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { HomeIcon, GridIcon, BagIcon, UserIcon } from "@/components/ui/icons";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import ClientOnly from "./ClientOnly";
 
 const items = [
   { href: "/", label: "Home", Icon: HomeIcon },
@@ -14,7 +15,7 @@ const items = [
   { href: "/perfil", label: "Perfil", Icon: UserIcon },
 ] as const;
 
-export default function BottomNav() {
+function BottomNavContent() {
   const pathname = usePathname();
   const count = useCart((s) => s.items.reduce((n, i) => n + i.qty, 0));
 
@@ -29,14 +30,14 @@ export default function BottomNav() {
                 href={href}
                 className={`flex flex-col items-center justify-center gap-1 text-xs transition-all duration-200 ${
                   active
-                    ? "text-brand-600 scale-105"
+                    ? "text-brand-500 scale-105"
                     : "text-muted hover:text-text"
                 }`}
               >
                 <span className="relative inline-flex">
                   <Icon
                     size={24}
-                    className={active ? "text-brand-600" : "text-muted"}
+                    className={active ? "text-brand-500" : "text-muted"}
                   />
                   {label === "Carrinho" && count > 0 && (
                     <span className="absolute -top-2 -right-2 h-5 min-w-[20px] rounded-full bg-error text-white text-[10px] font-bold flex items-center justify-center">
@@ -54,5 +55,13 @@ export default function BottomNav() {
       </ul>
       <div className="h-[env(safe-area-inset-bottom)]" />
     </nav>
+  );
+}
+
+export default function BottomNav() {
+  return (
+    <ClientOnly fallback={<div className="fixed bottom-0 inset-x-0 h-20 bg-card border-t border-border z-40" />}>
+      <BottomNavContent />
+    </ClientOnly>
   );
 }

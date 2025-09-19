@@ -3,8 +3,9 @@ import Link from "next/link";
 import { useCart } from "@/lib/cart";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import ClientOnly from "./ClientOnly";
 
-export default function CartFab() {
+function CartFabContent() {
   const items = useCart((s) => s.items);
   const total = useCart((s) => s.total());
   const { status } = useSession();
@@ -25,7 +26,7 @@ export default function CartFab() {
   return (
     <button
       onClick={handleCheckout}
-      className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 bg-brand-600 hover:bg-brand-700 text-white px-6 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-3 font-semibold min-w-[200px] justify-center"
+      className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 bg-brand-500 hover:bg-brand-600 text-white px-6 py-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-3 font-medium min-w-[200px] justify-center"
     >
       <div className="relative">
         <span className="text-xl">🛒</span>
@@ -40,5 +41,13 @@ export default function CartFab() {
         <div className="text-xs opacity-90">{items.length} itens • R$ {total.toFixed(2)}</div>
       </div>
     </button>
+  );
+}
+
+export default function CartFab() {
+  return (
+    <ClientOnly>
+      <CartFabContent />
+    </ClientOnly>
   );
 }

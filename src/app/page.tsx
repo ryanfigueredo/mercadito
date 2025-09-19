@@ -54,8 +54,8 @@ export default function Home() {
               onClick={() => setActive(f)}
               className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
                 active === f 
-                  ? "bg-brand-600 text-white shadow-lg" 
-                  : "bg-card text-muted border border-border hover:border-brand-500 hover:text-brand-600"
+                  ? "bg-brand-500 text-white shadow-md" 
+                  : "bg-card text-muted border border-border hover:border-brand-400 hover:text-brand-500"
               }`}
             >
               {f}
