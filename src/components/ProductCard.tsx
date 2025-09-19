@@ -2,11 +2,15 @@
 import Link from "next/link";
 import { Product } from "@/lib/products";
 import { useCart } from "@/lib/cart";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function ProductCard({ product }: { product: Product }) {
   const add = useCart((s) => s.add);
   const inc = useCart((s) => s.inc);
   const dec = useCart((s) => s.dec);
+  const { status } = useSession();
+  const router = useRouter();
   const qty = useCart(
     (s) => s.items.find((i) => i.id === product.id)?.qty ?? 0
   );
@@ -59,7 +63,15 @@ export default function ProductCard({ product }: { product: Product }) {
               aria-label="Abrir carrinho"
               onClick={(e) => {
                 e.preventDefault();
-                window.location.href = "/checkout";
+                if (status !== "authenticated") {
+                  // Se não estiver logado, redireciona para login com callback para checkout
+                  router.push(
+                    `/auth/login?callbackUrl=${encodeURIComponent("/checkout")}`
+                  );
+                } else {
+                  // Se estiver logado, vai para checkout
+                  router.push("/checkout");
+                }
               }}
               className="px-2 text-sm underline underline-offset-2"
             >

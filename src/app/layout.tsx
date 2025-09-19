@@ -1,9 +1,17 @@
-import "@/styles/globals.css";
-import "@/styles/theme.css";
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "../styles/globals.css";
 import BottomNav from "@/components/BottomNav";
+import CartFab from "@/components/CartFab";
 
-export const metadata: Metadata = { title: "Mercadito", description: "Auth" };
+export const dynamic = "force-dynamic";
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "Mercadito",
+  description: "Seu mercado digital",
+};
 
 export default function RootLayout({
   children,
@@ -12,12 +20,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className="min-h-dvh pb-16">
+      <body className={inter.className}>
         {children}
-        {/* Bottom navigation fixed for all pages */}
-        <div className="block sm:hidden">
-          <BottomNav />
-        </div>
+        <BottomNav />
+        <CartFab />
       </body>
     </html>
   );
