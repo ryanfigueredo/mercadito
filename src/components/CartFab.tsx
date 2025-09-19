@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 export default function CartFab() {
   const items = useCart((s) => s.items);
   const total = useCart((s) => s.total());
-  const { status } = useSession();
+  const { status } = useSession() || { status: 'unauthenticated' };
   const router = useRouter();
 
   // Debug: log cart items
