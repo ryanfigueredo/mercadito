@@ -19,33 +19,34 @@ export default function BottomNav() {
   const count = useCart((s) => s.items.reduce((n, i) => n + i.qty, 0));
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 border-t bg-white text-black dark:bg-card dark:text-foreground z-40">
-      <ul className="mx-auto max-w-sm grid grid-cols-4 gap-1 py-2 px-4">
+    <nav className="fixed bottom-0 inset-x-0 bg-card border-t border-border z-40">
+      <ul className="mx-auto max-w-sm grid grid-cols-5 gap-1 py-3 px-4">
         {items.map(({ href, label, Icon }) => {
           const active = pathname === href;
           return (
             <li key={href} className="flex items-center justify-center">
               <Link
                 href={href}
-                className={
-                  "flex flex-col items-center justify-center gap-1 text-xs transition-colors" +
-                  (active
-                    ? " text-brand-600"
-                    : " text-black dark:text-foreground")
-                }
+                className={`flex flex-col items-center justify-center gap-1 text-xs transition-all duration-200 ${
+                  active
+                    ? "text-brand-600 scale-105"
+                    : "text-muted hover:text-text"
+                }`}
               >
                 <span className="relative inline-flex">
                   <Icon
-                    size={22}
-                    className={active ? "text-brand-600" : undefined}
+                    size={24}
+                    className={active ? "text-brand-600" : "text-muted"}
                   />
                   {label === "Carrinho" && count > 0 && (
-                    <span className="absolute -top-1 -right-2 h-5 min-w-[20px] rounded-full bg-brand-600 px-1 text-[11px] leading-5 text-white text-center">
+                    <span className="absolute -top-2 -right-2 h-5 min-w-[20px] rounded-full bg-error text-white text-[10px] font-bold flex items-center justify-center">
                       {count}
                     </span>
                   )}
                 </span>
-                <span>{label}</span>
+                <span className={active ? "font-semibold" : "font-medium"}>
+                  {label}
+                </span>
               </Link>
             </li>
           );

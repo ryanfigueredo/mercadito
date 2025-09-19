@@ -4,6 +4,7 @@ import "../styles/globals.css";
 import BottomNav from "@/components/BottomNav";
 import CartFab from "@/components/CartFab";
 import AuthProvider from "@/components/AuthProvider";
+import CartHydration from "@/components/CartHydration";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,7 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={inter.className}>
         <AuthProvider>
+          <CartHydration />
           {children}
           <BottomNav />
           <CartFab />

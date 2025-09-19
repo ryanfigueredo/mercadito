@@ -1,5 +1,6 @@
 "use client";
 import { create } from "zustand";
+import { useEffect } from "react";
 
 export type CartItem = {
   id: string; // product slug
@@ -30,7 +31,7 @@ function loadInitial(): CartItem[] {
 }
 
 export const useCart = create<CartState>((set, get) => ({
-  items: typeof window !== "undefined" ? loadInitial() : [],
+  items: [],
   add: (item, qty = 1) =>
     set((s) => {
       const existing = s.items.find((i) => i.id === item.id);
@@ -70,3 +71,13 @@ export const useCart = create<CartState>((set, get) => ({
   },
   total: () => get().items.reduce((s, i) => s + i.qty * i.price, 0),
 }));
+
+// Hook para inicializar o carrinho apenas no cliente
+export function useCartHydration() {
+  useEffect(() => {
+    const items = loadInitial();
+    if (items.length > 0) {
+      useCart.setState({ items });
+    }
+  }, []);
+}
