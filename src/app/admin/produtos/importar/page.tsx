@@ -8,10 +8,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function ImportarProdutosPage() {
-  const { data: session, status } = useSession() || {
-    data: null,
-    status: "unauthenticated",
-  };
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);

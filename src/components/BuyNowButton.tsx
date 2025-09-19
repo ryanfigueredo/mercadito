@@ -13,7 +13,7 @@ export default function BuyNowButton({
   unit_price: number;
 }) {
   const [loading, setLoading] = useState(false);
-  const { status } = useSession() || { status: "unauthenticated" };
+  const { status } = useSession();
   const onClick = async () => {
     setLoading(true);
     try {

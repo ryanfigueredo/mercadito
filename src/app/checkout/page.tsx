@@ -9,10 +9,7 @@ import PixPayment from "@/components/PixPayment";
 import CreditCardPayment from "@/components/CreditCardPayment";
 
 export default function CheckoutPage() {
-  const { data: session, status } = useSession() || {
-    data: null,
-    status: "unauthenticated",
-  };
+  const { data: session, status } = useSession();
   const items = useCart((s) => s.items);
   const total = useCart((s) => s.total());
   const clear = useCart((s) => s.clear);
