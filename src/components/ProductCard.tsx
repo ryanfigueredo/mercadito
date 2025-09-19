@@ -9,7 +9,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const add = useCart((s) => s.add);
   const inc = useCart((s) => s.inc);
   const dec = useCart((s) => s.dec);
-  const { status } = useSession() || { status: 'unauthenticated' };
+  const { status } = useSession() || { status: "unauthenticated" };
   const router = useRouter();
   const qty = useCart(
     (s) => s.items.find((i) => i.id === product.id)?.qty ?? 0
