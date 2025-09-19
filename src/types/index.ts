@@ -8,6 +8,9 @@ export interface PaymentData {
   status?: string;
   chargeId?: string;
 }
+/**
+ * Dados do cartão de crédito
+ */
 
 export interface CardData {
   number: string;
