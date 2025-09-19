@@ -1,4 +1,5 @@
 // Tipos para o sistema de pagamentos
+// Payment data interface for Pagar.me integration
 export interface PaymentData {
   orderId: string;
   pixQrCode?: string;
