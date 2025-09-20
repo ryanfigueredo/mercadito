@@ -59,6 +59,22 @@ export async function POST(req: NextRequest) {
     const freightCents = 2000; // R$20,00 frete fixo
     const totalCents = itemsTotalCents + freightCents;
 
+    // Buscar produtos no banco usando os slugs do carrinho
+    const productSlugs = items.map(item => item.id);
+    const dbProducts = await prisma.product.findMany({
+      where: { slug: { in: productSlugs } }
+    });
+
+    // Validar se todos os produtos existem
+    if (dbProducts.length !== items.length) {
+      const foundSlugs = dbProducts.map(p => p.slug);
+      const missingSlugs = productSlugs.filter(slug => !foundSlugs.includes(slug));
+      return NextResponse.json(
+        { error: `Produtos não encontrados: ${missingSlugs.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
     // Criar pedido no banco
     const order = await prisma.order.create({
       data: {
@@ -67,11 +83,14 @@ export async function POST(req: NextRequest) {
         totalCents,
         paymentMethod: "pagarme_pix",
         items: {
-          create: items.map((item) => ({
-            productId: item.id,
-            quantity: item.quantity || 1,
-            unitPriceCents: Math.round(item.price * 100),
-          })),
+          create: items.map((item) => {
+            const dbProduct = dbProducts.find(p => p.slug === item.id)!;
+            return {
+              productId: dbProduct.id, // usar o ID real do banco
+              quantity: item.quantity || 1,
+              unitPriceCents: Math.round(item.price * 100),
+            };
+          }),
         },
       },
     });
