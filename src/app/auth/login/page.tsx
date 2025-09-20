@@ -109,8 +109,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-dvh">
       {/* Hero Peach */}
-      <div className="auth-hero ">
-        <div className="auth-wrap">
+      <div className="auth-hero bg-[#F8B075]">
+        <div className="auth-wrap ">
           <h1 className="text-4xl font-serif font-semibold mb-3 text-white">
             mercadito
           </h1>
@@ -118,7 +118,7 @@ export default function LoginPage() {
       </div>
 
       {/* Superfície branca sobreposta */}
-      <div className="auth-surface">
+      <div className="auth-surface bg-white rounded-t-3xl">
         <div className="card p-4">
           <h2 className="h-title mb-3">Login</h2>
 

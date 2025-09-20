@@ -14,8 +14,8 @@ import {
   HelpCircleIcon,
   LogOutIcon,
 } from "@/components/ui/icons";
-import { signOut } from "next-auth/react";
 import { redirect } from "next/navigation";
+import LogoutButton from "@/components/LogoutButton";
 
 type IconComponent = (props: {
   size?: number;
@@ -135,11 +135,7 @@ export default async function PerfilPage() {
                 Icon={HelpCircleIcon}
                 label="Ajuda e Suporte"
               />
-              <MenuItemButton
-                onClick={() => signOut({ callbackUrl: "/" })}
-                Icon={LogOutIcon}
-                label="Sair"
-              />
+              <LogoutButton />
             </nav>
 
             <div className="mt-4">
@@ -157,24 +153,3 @@ export default async function PerfilPage() {
   );
 }
 
-function MenuItemButton({
-  onClick,
-  Icon,
-  label,
-}: {
-  onClick: () => void;
-  Icon: IconComponent;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="w-full text-left flex items-center gap-3 p-4 hover:bg-gray-50 focus:bg-gray-50"
-    >
-      <Icon size={18} className="text-muted" />
-      <span className="flex-1">{label}</span>
-      <span className="text-muted">›</span>
-    </button>
-  );
-}
