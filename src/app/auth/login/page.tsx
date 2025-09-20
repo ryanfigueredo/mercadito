@@ -109,7 +109,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-dvh">
       {/* Hero Peach */}
-      <div className="auth-hero">
+      <div className="auth-hero ">
         <div className="auth-wrap">
           <h1 className="text-4xl font-serif font-semibold mb-3 text-white">
             mercadito
