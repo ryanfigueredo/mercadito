@@ -16,7 +16,7 @@ export default async function ProductPage({
   return (
     <div className="min-h-dvh">
       <Topbar isLogged={false} />
-      <main className="mx-auto max-w-sm px-4 pb-20">
+      <main className="mx-auto max-w-sm px-4 pb-32">
         <div className="mt-3 rounded-2xl bg-brand-50 aspect-square grid place-items-center">
           <span className="text-sm text-muted">Imagem</span>
         </div>

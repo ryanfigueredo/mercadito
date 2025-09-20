@@ -27,7 +27,7 @@ export default function Home() {
   return (
     <div className="min-h-dvh">
       <Topbar isLogged={false} />
-      <main className="mx-auto max-w-sm px-4 pb-20">
+      <main className="mx-auto max-w-sm px-4 pb-32">
         <div className="mt-3">
           <Input
             left={<SearchIcon />}
@@ -45,7 +45,7 @@ export default function Home() {
               key={f}
               onClick={() => setActive(f)}
               className={`shrink-0 rounded-full px-3 py-2 text-sm ${
-                active === f ? "bg-brand-600 text-white" : "bg-gray-100"
+                active === f ? "bg-brand-600 text-white" : "bg-gray-200"
               }`}
             >
               {f}

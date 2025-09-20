@@ -38,7 +38,7 @@ export default async function CategoryPage({
   return (
     <div className="min-h-dvh">
       <Topbar isLogged={false} />
-      <main className="mx-auto max-w-sm px-4 pb-20">
+      <main className="mx-auto max-w-sm px-4 pb-32">
         <h1 className="h-title mt-4">{cat.name}</h1>
         <div className="mt-3">
           <Input

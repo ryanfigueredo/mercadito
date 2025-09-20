@@ -152,4 +152,3 @@ export default async function PerfilPage() {
     </div>
   );
 }
-

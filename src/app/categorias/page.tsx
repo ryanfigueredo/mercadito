@@ -8,10 +8,13 @@ export default function CategoriasPage() {
   return (
     <div className="min-h-dvh">
       <Topbar isLogged={false} />
-      <main className="mx-auto max-w-sm px-4 pb-20">
+      <main className="mx-auto max-w-sm px-4 pb-32">
         <h1 className="h-title mt-4">Categorias</h1>
         <div className="mt-3">
-          <Input left={<SearchIcon />} placeholder="Busque por um item ou categoria" />
+          <Input
+            left={<SearchIcon />}
+            placeholder="Busque por um item ou categoria"
+          />
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-4">

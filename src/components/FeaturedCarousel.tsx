@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const banners = [
   {
@@ -14,28 +14,46 @@ const banners = [
 
 export default function FeaturedCarousel() {
   const [index, setIndex] = useState(0);
+
+  // Rotação automática a cada 10 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prevIndex) => (prevIndex + 1) % banners.length);
+    }, 10000); // 10 segundos
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const goToSlide = (slideIndex: number) => {
+    setIndex(slideIndex);
+  };
+
   return (
     <div className="mt-3">
-      <div className="overflow-x-auto no-scrollbar">
-        <div className="flex gap-3 pr-4">
-          {banners.map((b, i) => (
+      <div className="overflow-hidden">
+        <div
+          className="flex transition-transform duration-500 ease-in-out"
+          style={{ transform: `translateX(-${index * 100}%)` }}
+        >
+          {banners.map((banner) => (
             <div
-              key={b.id}
-              onMouseEnter={() => setIndex(i)}
-              className={`h-56 w-[360px] shrink-0 rounded-2xl ${b.color} grid place-items-center`}
+              key={banner.id}
+              className={`h-56 w-full shrink-0 rounded-2xl ${banner.color} grid place-items-center`}
             >
-              <span className="text-lg font-medium">{b.title}</span>
+              <span className="text-lg font-medium">{banner.title}</span>
             </div>
           ))}
         </div>
       </div>
       <div className="mt-3 flex justify-center gap-2">
         {banners.map((_, i) => (
-          <span
+          <button
             key={i}
-            className={`h-2 w-2 rounded-full ${
-              i === index ? "bg-brand-600" : "bg-gray-300"
+            onClick={() => goToSlide(i)}
+            className={`h-2 w-2 rounded-full transition-colors duration-200 ${
+              i === index ? "bg-brand-600" : "bg-gray-300 hover:bg-gray-400"
             }`}
+            aria-label={`Ir para banner ${i + 1}`}
           />
         ))}
       </div>

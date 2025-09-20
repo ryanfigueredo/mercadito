@@ -21,7 +21,7 @@ export default async function PedidosPage() {
   return (
     <div className="min-h-dvh">
       <Topbar isLogged address="Rua das Laranjeiras nº 100" />
-      <main className="mx-auto max-w-sm px-4 pb-24">
+      <main className="mx-auto max-w-sm px-4 pb-32">
         <h1 className="h-title my-4">Atual</h1>
 
         {current && (

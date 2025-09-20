@@ -54,7 +54,7 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-dvh">
         <Topbar />
-        <main className="mx-auto max-w-sm px-4 pb-24">
+        <main className="mx-auto max-w-sm px-4 pb-32">
           <div className="mt-4 rounded-2xl border border-brand-500 p-3 bg-brand-50">
             <p className="text-sm">
               Entre na sua conta para finalizar a compra.
@@ -77,7 +77,7 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-dvh">
         <Topbar />
-        <main className="mx-auto max-w-sm px-4 pb-24">
+        <main className="mx-auto max-w-sm px-4 pb-32">
           <div className="mt-8 text-center">
             <div className="text-6xl mb-4">✅</div>
             <h1 className="text-2xl font-bold mb-2">Pagamento Realizado!</h1>
@@ -96,7 +96,7 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-dvh">
       <Topbar />
-      <main className="mx-auto max-w-sm px-4 pb-24">
+      <main className="mx-auto max-w-sm px-4 pb-32">
         <h1 className="h-title mt-4">Resumo</h1>
         <div className="mt-3 rounded-2xl border bg-white">
           {items.length === 0 && (
