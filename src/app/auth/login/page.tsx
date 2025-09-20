@@ -177,7 +177,11 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <Button className="w-full" type="submit" disabled={loading}>
+            <Button
+              className="w-full bg-[#F8B075] "
+              type="submit"
+              disabled={loading}
+            >
               {loading ? "Entrando..." : "Entrar"}
             </Button>
 
@@ -189,29 +193,14 @@ export default function LoginPage() {
             </div>
 
             {/* Sociais */}
-            <div className="flex justify-center gap-3">
-              <Button
-                type="button"
-                variant="accent"
-                size="icon"
-                aria-label="Apple"
-              >
+            <div className="flex justify-center gap-2">
+              <Button className="bg-[#F8B075] ">
                 <AppleIcon />
               </Button>
-              <Button
-                type="button"
-                variant="accent"
-                size="icon"
-                aria-label="Facebook"
-              >
+              <Button className="bg-[#F8B075] ">
                 <FacebookIcon />
               </Button>
-              <Button
-                type="button"
-                variant="accent"
-                size="icon"
-                aria-label="Google"
-              >
+              <Button className="bg-[#F8B075] ">
                 <GoogleIcon />
               </Button>
             </div>
