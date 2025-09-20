@@ -21,7 +21,7 @@ export default async function EditarPerfilPage() {
           <p className="text-sm">Faça login para editar seu perfil.</p>
           <Link
             href="/auth/login"
-            className="mt-2 inline-block font-semibold text-brand-600"
+            className="mt-2 inline-block font-semibold text-black"
           >
             Login
           </Link>
@@ -41,7 +41,7 @@ export default async function EditarPerfilPage() {
       <main className="mx-auto max-w-sm px-4 py-6">
         <div className="flex items-center justify-between mb-3">
           <h1 className="h-title">Editar Perfil</h1>
-          <Link href="/perfil" className="text-sm text-brand-600 font-semibold">
+          <Link href="/perfil" className="text-sm text-black font-semibold">
             Voltar
           </Link>
         </div>

@@ -167,7 +167,7 @@ export default function LoginPage() {
               <label className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                  className="h-4 w-4 rounded border-gray-300 text-black focus:ring-black-500"
                   {...register("remember")}
                 />
                 Manter conectado
@@ -208,10 +208,10 @@ export default function LoginPage() {
         </div>
 
         {/* CTA inferior (card outline) */}
-        <div className="mt-4 rounded-2xl border border-brand-500 p-4 text-center">
+        <div className="mt-4 rounded-2xl border border-black-500 p-4 text-center">
           <p className="text-sm text-muted">Não tem uma conta?</p>
           <Link
-            className="mt-1 inline-block font-semibold text-brand-600"
+            className="mt-1 inline-block font-semibold text-black"
             href="/auth/register"
           >
             Cadastre-se

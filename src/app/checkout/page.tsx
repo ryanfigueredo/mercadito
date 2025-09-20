@@ -55,14 +55,14 @@ export default function CheckoutPage() {
       <div className="min-h-dvh">
         <Topbar />
         <main className="mx-auto max-w-sm px-4 pb-32">
-          <div className="mt-4 rounded-2xl border border-brand-500 p-3 bg-brand-50">
+          <div className="mt-4 rounded-2xl border border-black-500 p-3 bg-black-50">
             <p className="text-sm">
               Entre na sua conta para finalizar a compra.
               <Link
                 href={`/auth/login?callbackUrl=${encodeURIComponent(
                   "/checkout"
                 )}`}
-                className="ml-2 font-semibold text-brand-600 underline"
+                className="ml-2 font-semibold text-black underline"
               >
                 Fazer login
               </Link>

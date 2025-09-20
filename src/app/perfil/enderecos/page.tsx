@@ -22,7 +22,7 @@ export default async function EnderecosPage() {
           <p className="text-sm">Faça login para gerenciar seus endereços.</p>
           <Link
             href="/auth/login"
-            className="mt-2 inline-block font-semibold text-brand-600"
+            className="mt-2 inline-block font-semibold text-black"
           >
             Login
           </Link>
@@ -42,7 +42,7 @@ export default async function EnderecosPage() {
       <main className="mx-auto max-w-sm px-4 py-6">
         <div className="flex items-center justify-between mb-2">
           <h1 className="h-title">Endereços</h1>
-          <Link href="/perfil" className="text-sm text-brand-600 font-semibold">
+          <Link href="/perfil" className="text-sm text-black font-semibold">
             Voltar
           </Link>
         </div>
@@ -52,7 +52,7 @@ export default async function EnderecosPage() {
             <p className="text-sm text-muted">Você não está logado.</p>
             <Link
               href="/auth/login"
-              className="mt-2 inline-block font-semibold text-brand-600"
+              className="mt-2 inline-block font-semibold text-black"
             >
               Fazer login
             </Link>

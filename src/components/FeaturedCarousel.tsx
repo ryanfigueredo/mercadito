@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 
 const banners = [
   {
@@ -48,13 +47,11 @@ export default function FeaturedCarousel() {
       </div>
       <div className="mt-3 flex justify-center gap-2">
         {banners.map((_, i) => (
-          <Button
+          <button
             key={i}
             onClick={() => goToSlide(i)}
-            variant="ghost"
-            size="sm"
-            className={`h-2 w-2 rounded-full p-0 transition-colors duration-200 ${
-              i === index ? "bg-[#F8B075] scale-150" : "bg-[#e6e6e6]"
+            className={`h-2 w-2 rounded-full transition-colors duration-200 ${
+              i === index ? "bg-[#F8B075] scale-150" : "bg-gray-300"
             }`}
             aria-label={`Ir para banner ${i + 1}`}
           />

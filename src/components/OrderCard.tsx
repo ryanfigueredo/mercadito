@@ -46,7 +46,7 @@ export default function OrderCard({ order }: { order: Order }) {
           <button
             type="button"
             className={`text-sm underline underline-offset-2 hover:underline-offset-4 ${
-              isPending ? "text-brand-600" : "text-muted"
+              isPending ? "text-black" : "text-muted"
             }`}
             onClick={() => setOpen(true)}
           >

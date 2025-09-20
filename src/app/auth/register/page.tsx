@@ -345,10 +345,10 @@ export default function RegisterPage() {
         </div>
 
         {/* CTA inferior (outline) */}
-        <div className="mt-4 rounded-2xl border border-brand-500 p-4 text-center">
+        <div className="mt-4 rounded-2xl border border-black-500 p-4 text-center">
           <p className="text-sm text-muted">Já tem uma conta?</p>
           <Link
-            className="mt-1 inline-block font-semibold text-brand-600"
+            className="mt-1 inline-block font-semibold text-black"
             href="/auth/login"
           >
             Faça Login

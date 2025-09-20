@@ -41,7 +41,7 @@ export default function ProductCard({ product }: { product: Product }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow relative">
       {/* Product Image */}
       <Link href={`/product/${product.id}`} className="block">
         <div className="aspect-square w-full bg-gray-50 flex items-center justify-center">
@@ -49,63 +49,38 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
       </Link>
 
+      {/* Floating Add Button */}
+      <div className="absolute bottom-5 right-5 transform">
+        <Button
+          onClick={handleAddToCart}
+          className="w-8 h-8 rounded-full bg-[#F8B075] hover:bg-[#e6a065] text-white flex items-center justify-center p-0 shadow-lg"
+        >
+          <Plus size={16} />
+        </Button>
+      </div>
+
       {/* Product Info */}
-      <div className="p-4">
+      <div className="p-4 pt-6">
         <Link href={`/product/${product.id}`} className="block">
           <p className="text-sm text-gray-500 mb-1">{product.category}</p>
           <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
             {product.name}
           </h3>
-          <p className="text-lg font-bold text-gray-900 mb-3">
-            R$ {product.price.toFixed(2)}
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-lg font-bold text-gray-900 mb-3">
+              R$ {product.price.toFixed(2)}
+            </p>
+
+            {/* Add to Cart */}
+          </div>
         </Link>
 
         {/* Promo Badge */}
         {product.promo && (
           <div className="mb-3">
-            <span className="inline-block bg-brand-50 text-brand-600 text-xs px-2 py-1 rounded-full">
+            <span className="inline-block bg-black-50 text-black text-xs px-2 py-1 rounded-full">
               {product.promo.label}
             </span>
-          </div>
-        )}
-
-        {/* Add to Cart */}
-        {qty <= 0 ? (
-          <Button
-            onClick={handleAddToCart}
-            className="w-full bg-brand-500 hover:bg-brand-600 text-white rounded-xl py-3 flex items-center justify-center gap-2"
-          >
-            <Plus size={16} />
-            Adicionar ao carrinho
-          </Button>
-        ) : (
-          <div className="flex items-center justify-between bg-gray-50 rounded-xl p-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => handleQuantityChange(e, "dec")}
-              className="h-8 w-8 p-0 hover:bg-gray-200"
-            >
-              <Minus size={14} />
-            </Button>
-
-            <Button
-              variant="ghost"
-              onClick={handleViewCart}
-              className="flex-1 mx-2 text-sm font-medium hover:bg-gray-200"
-            >
-              {qty} no carrinho
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => handleQuantityChange(e, "inc")}
-              className="h-8 w-8 p-0 hover:bg-gray-200"
-            >
-              <Plus size={14} />
-            </Button>
           </div>
         )}
       </div>

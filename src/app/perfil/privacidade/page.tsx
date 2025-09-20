@@ -29,7 +29,7 @@ export default async function PrivacidadePage() {
       <main className="mx-auto max-w-sm px-4 py-6">
         <div className="flex items-center justify-between mb-3">
           <h1 className="h-title">Privacidade</h1>
-          <Link href="/perfil" className="text-sm text-brand-600 font-semibold">
+          <Link href="/perfil" className="text-sm text-black font-semibold">
             Voltar
           </Link>
         </div>

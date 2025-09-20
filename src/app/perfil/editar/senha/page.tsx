@@ -21,7 +21,7 @@ export default async function AlterarSenhaPage() {
           <p className="text-sm">Faça login para alterar sua senha.</p>
           <Link
             href="/auth/login"
-            className="mt-2 inline-block font-semibold text-brand-600"
+            className="mt-2 inline-block font-semibold text-black"
           >
             Login
           </Link>
@@ -43,7 +43,7 @@ export default async function AlterarSenhaPage() {
           <h1 className="h-title">Alterar Senha</h1>
           <Link
             href="/perfil/editar"
-            className="text-sm text-brand-600 font-semibold"
+            className="text-sm text-black font-semibold"
           >
             Voltar
           </Link>

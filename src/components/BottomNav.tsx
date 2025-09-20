@@ -24,21 +24,19 @@ function BottomNavContent() {
               <Link
                 href={href}
                 className={`flex flex-col items-center justify-center gap-1 text-xs transition-all duration-200 rounded-lg px-2 py-2 ${
-                  active
-                    ? "text-brand-600 bg-brand-50"
-                    : "text-gray-600 hover:text-brand-600 hover:bg-gray-50"
+                  active ? "text-black bg-black-50" : "text-gray-600"
                 }`}
               >
                 <span className="relative inline-flex">
                   <Icon
                     size={22}
-                    className={active ? "text-brand-600" : "text-gray-600"}
+                    className={active ? "text-black" : "text-gray-600"}
                     strokeWidth={active ? 2.5 : 1.5}
                   />
                 </span>
                 <span
                   className={`font-medium ${
-                    active ? "text-brand-600" : "text-gray-600"
+                    active ? "text-black" : "text-gray-600"
                   }`}
                 >
                   {label}

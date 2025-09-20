@@ -19,7 +19,7 @@ export default function LogoutButton({
     <Button
       variant="ghost"
       onClick={() => signOut({ callbackUrl: "/" })}
-      className="w-full text-left flex items-center gap-3 p-4 hover:bg-gray-50 focus:bg-gray-50 justify-start"
+      className="w-full text-left flex items-center gap-3 p-4 justify-start"
     >
       <Icon size={18} className="text-muted" />
       <span className="flex-1">{label}</span>

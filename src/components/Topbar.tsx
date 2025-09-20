@@ -11,11 +11,11 @@ export default function Topbar({
   isLogged?: boolean;
 }) {
   return (
-    <header className="sticky top-0 z-20 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <header className="sticky top-0 z-20 bg-[#ff7f16] backdrop-blur bg-[#ff7f16]/60">
       <div className="mx-auto max-w-sm px-4 py-3 flex items-center gap-3">
         <Link href="/" className="shrink-0" aria-label="Mercadito">
           <Image
-            src="/mercaditoColor.svg"
+            src="/mercadito.svg"
             alt="mercadito"
             width={120}
             height={24}
@@ -24,7 +24,7 @@ export default function Topbar({
         </Link>
         <button
           aria-label="Notificações"
-          className="ml-auto rounded-full p-2 hover:bg-brand-50"
+          className="ml-auto rounded-full text-white border border-white p-2 "
         >
           <BellIcon />
         </button>

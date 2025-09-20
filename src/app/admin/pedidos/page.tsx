@@ -95,7 +95,7 @@ export default function AdminPedidosPage() {
                 setPage(1);
               }}
               className={
-                status === t.key ? "text-brand-600 font-semibold" : "text-muted"
+                status === t.key ? "text-black font-semibold" : "text-muted"
               }
             >
               {t.label}

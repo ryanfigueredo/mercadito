@@ -23,7 +23,6 @@ export const products: Product[] = [
     category: "Grãos",
     price: 22.0,
     image: "/next.svg",
-    promo: { label: "10% OFF a partir de 10 un." },
   },
   {
     id: "feijao-kicaldo-1kg",

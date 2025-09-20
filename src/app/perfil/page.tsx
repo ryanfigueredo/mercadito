@@ -32,10 +32,7 @@ function MenuItem({
   label: string;
 }) {
   return (
-    <Link
-      href={href}
-      className="flex items-center gap-3 p-4 hover:bg-gray-50 focus:bg-gray-50"
-    >
+    <Link href={href} className="flex items-center gap-3 p-4 ">
       <Icon size={18} className="text-muted" />
       <span className="flex-1">{label}</span>
       <span className="text-muted">›</span>
@@ -72,7 +69,7 @@ export default async function PerfilPage() {
             <p className="text-sm text-muted">Você não está logado.</p>
             <Link
               href="/auth/login"
-              className="mt-2 inline-block font-semibold text-brand-600"
+              className="mt-2 inline-block font-semibold text-black"
             >
               Fazer login
             </Link>
@@ -81,7 +78,7 @@ export default async function PerfilPage() {
 
         {dbUser && (
           <>
-            <section className="relative overflow-hidden rounded-2xl bg-brand-50">
+            <section className="relative overflow-hidden rounded-2xl bg-black-50">
               <div className="p-4 flex items-center gap-3">
                 <div className="h-16 w-16 rounded-full overflow-hidden bg-gray-200">
                   <Image

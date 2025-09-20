@@ -17,7 +17,7 @@ export default async function ProductPage({
     <div className="min-h-dvh">
       <Topbar isLogged={false} />
       <main className="mx-auto max-w-sm px-4 pb-32">
-        <div className="mt-3 rounded-2xl bg-brand-50 aspect-square grid place-items-center">
+        <div className="mt-3 rounded-2xl bg-black-50 aspect-square grid place-items-center">
           <span className="text-sm text-muted">Imagem</span>
         </div>
         <div className="card p-4 mt-3">
@@ -27,7 +27,7 @@ export default async function ProductPage({
             R$ {product.price.toFixed(2)}
           </p>
           {product.promo && (
-            <div className="mt-2 rounded-xl bg-brand-50 px-3 py-2 text-sm text-brand-700">
+            <div className="mt-2 rounded-xl bg-black-50 px-3 py-2 text-sm text-black-700">
               {product.promo.label}
             </div>
           )}

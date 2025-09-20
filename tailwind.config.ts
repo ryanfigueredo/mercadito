@@ -10,14 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: "var(--brand-50)",
-          100: "var(--brand-100)",
-          500: "var(--brand-500)",
-          600: "var(--brand-600)",
-          700: "var(--brand-700)",
-        },
-        accent: { 
+        accent: {
           500: "var(--accent-500)",
           600: "var(--accent-600)",
         },
@@ -34,7 +27,7 @@ const config: Config = {
       boxShadow: {
         card: "var(--shadow)",
       },
-      borderRadius: { 
+      borderRadius: {
         DEFAULT: "var(--radius)",
         lg: "var(--radius-lg)",
         xl: "var(--radius)",
