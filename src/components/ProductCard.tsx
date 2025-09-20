@@ -44,8 +44,31 @@ export default function ProductCard({ product }: { product: Product }) {
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow relative">
       {/* Product Image */}
       <Link href={`/product/${product.id}`} className="block">
-        <div className="aspect-square w-full bg-gray-50 flex items-center justify-center">
-          <span className="text-sm text-gray-400">Imagem</span>
+        <div className="aspect-square w-full bg-gray-50 flex items-center justify-center relative overflow-hidden">
+          {product.image &&
+          product.image !== "/next.svg" &&
+          product.image !== "/vercel.svg" ? (
+            <img
+              src={product.image}
+              alt={product.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+                e.currentTarget.nextElementSibling?.classList.remove("hidden");
+              }}
+            />
+          ) : null}
+          <div
+            className={`w-full h-full flex items-center justify-center ${
+              product.image &&
+              product.image !== "/next.svg" &&
+              product.image !== "/vercel.svg"
+                ? "hidden"
+                : ""
+            }`}
+          >
+            <span className="text-sm text-gray-400">Sem imagem</span>
+          </div>
         </div>
       </Link>
 

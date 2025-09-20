@@ -143,6 +143,39 @@ export const HelpCircleIcon = createIcon(
 export const LogOutIcon = createIcon(
   <path d="M16 13v-2H7V8L3 12l4 4v-3h9Zm1-10H11a2 2 0 0 0-2 2v3h2V5h6v14h-6v-3H9v3a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z" />
 );
+
+// Admin specific icons
+export const BarChart3Icon = createIcon(
+  <path d="M3 3v18h18M8 17V9m4 8V5m4 12v-7" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+);
+
+export const ShoppingCartIcon = createIcon(
+  <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5H2M7 13l-1.6 2.4A1 1 0 0 0 6.2 17H17M9 19a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm8 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+);
+
+export const PackageIcon = createIcon(
+  <path d="M12 2L2 7l10 5 10-5-10-5ZM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+);
+
+export const UsersIcon = createIcon(
+  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+);
+
+export const TrendingUpIcon = createIcon(
+  <path d="M23 6 13.5 15.5 8.5 10.5 1 18M17 6h6v6" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+);
+
+export const DollarSignIcon = createIcon(
+  <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+);
+
+export const UploadIcon = createIcon(
+  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+);
+
+export const ImageIcon = createIcon(
+  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+);
 const icons = {
   MailIcon,
   LockIcon,

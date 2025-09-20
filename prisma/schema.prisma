@@ -19,6 +19,7 @@ model User {
   password  String
   document  String?   // CPF/CNPJ para Pagar.me
   phone     String?   // Telefone para Pagar.me
+  isAdmin   Boolean   @default(false) // Permissão para acessar área admin
   addresses Address[]
   orders    Order[]
   createdAt DateTime  @default(now())
@@ -42,6 +43,7 @@ model Product {
   name      String
   category  String
   priceCents Int
+  stock     Int      @default(0) // Quantidade em estoque
   imageUrl  String?
   promoText String?
   createdAt DateTime @default(now())

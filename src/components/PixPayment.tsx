@@ -108,7 +108,11 @@ export default function PixPayment({ onSuccess, onError }: PixPaymentProps) {
         </p>
       </div>
 
-      <Button onClick={handlePixPayment} disabled={loading} className="w-full">
+      <Button
+        onClick={handlePixPayment}
+        disabled={loading}
+        className="w-full text-black"
+      >
         {loading ? "Processando..." : "Gerar PIX"}
       </Button>
     </div>
