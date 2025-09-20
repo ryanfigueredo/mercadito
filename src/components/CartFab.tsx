@@ -4,6 +4,7 @@ import { useCart } from "@/lib/cart";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import ClientOnly from "./ClientOnly";
+import { Button } from "./ui/button";
 
 function CartFabContent() {
   const items = useCart((s) => s.items);
@@ -24,12 +25,12 @@ function CartFabContent() {
   };
 
   return (
-    <button
+    <Button
       onClick={handleCheckout}
-      className="fixed bottom-16 left-1/2 -translate-x-1/2 z-40 rounded-full bg-brand-600 text-white px-5 py-3 shadow-lg hover:bg-brand-700 transition-colors"
+      className="fixed bottom-16  rounded-none z-40 text-sm w-full bg-[#e6e6e6] text-black "
     >
-      Ver carrinho • {items.length} itens • R$ {total.toFixed(2)}
-    </button>
+      Ver carrinho | R${total.toFixed(2)}
+    </Button>
   );
 }
 

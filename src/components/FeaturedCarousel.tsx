@@ -51,7 +51,7 @@ export default function FeaturedCarousel() {
             key={i}
             onClick={() => goToSlide(i)}
             className={`h-2 w-2 rounded-full transition-colors duration-200 ${
-              i === index ? "bg-brand-600" : "bg-gray-300 hover:bg-gray-400"
+              i === index ? "bg-[#F8B075] scale-150" : "bg-[#e6e6e6]"
             }`}
             aria-label={`Ir para banner ${i + 1}`}
           />

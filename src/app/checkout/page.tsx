@@ -17,7 +17,7 @@ export default function CheckoutPage() {
   const dec = useCart((s) => s.dec);
 
   // Verificação de hidratação
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return (
       <div className="min-h-dvh flex items-center justify-center">
         <div>Carregando...</div>

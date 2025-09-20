@@ -45,7 +45,7 @@ export default function Home() {
               key={f}
               onClick={() => setActive(f)}
               className={`shrink-0 rounded-full px-3 py-2 text-sm ${
-                active === f ? "bg-brand-600 text-white" : "bg-gray-200"
+                active === f ? "bg-[#F8B075] text-white" : "bg-gray-200"
               }`}
             >
               {f}

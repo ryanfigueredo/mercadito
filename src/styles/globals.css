@@ -14,7 +14,7 @@ body {
 
 @layer components {
   .auth-hero {
-    @apply h-56 bg-brand-500 flex items-end;
+    @apply h-56 flex items-end;
   }
   .auth-wrap {
     @apply mx-auto max-w-sm px-4 pb-10 w-full;
@@ -23,7 +23,7 @@ body {
     @apply mx-auto max-w-sm px-4 pb-10 -mt-10;
   }
   .h-title {
-    @apply text-xl font-semibold text-brand-600;
+    @apply text-xl font-semibold text-black;
   }
   .sep {
     @apply flex items-center gap-2 my-2;
@@ -49,21 +49,4 @@ body {
   }
 }
 
-@theme inline {
-  /* Map custom tokens to Tailwind color names */
-  --color-brand-50: var(--brand-50);
-  --color-brand-100: var(--brand-100);
-  --color-brand-500: var(--brand-500);
-  --color-brand-600: var(--brand-600);
-  --color-accent-500: var(--accent-500);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-primary: var(--brand-500);
-  --color-primary-foreground: #000000;
-}
 /* strip unused design tokens to avoid confusion in v4 */
