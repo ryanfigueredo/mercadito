@@ -4,6 +4,7 @@ import Topbar from "@/components/Topbar";
 import FeaturedCarousel from "@/components/FeaturedCarousel";
 import ProductCard from "@/components/ProductCard";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { SearchIcon } from "@/components/ui/icons";
 import { products, applyFilter, type FilterKey } from "@/lib/products";
 import CartFab from "@/components/CartFab";
@@ -41,20 +42,20 @@ export default function Home() {
 
         <div className="mt-4 flex items-center gap-3 overflow-x-auto no-scrollbar">
           {filters.map((f) => (
-            <button
+            <Button
               key={f}
+              variant="ghost"
               onClick={() => setActive(f)}
               className={`shrink-0 rounded-full px-3 py-2 text-sm ${
                 active === f ? "bg-[#F8B075] text-white" : "bg-gray-200"
               }`}
             >
               {f}
-            </button>
+            </Button>
           ))}
         </div>
 
         <section className="mt-3">
-          <h2 className="sr-only">Ofertas do dia</h2>
           <div className="grid grid-cols-2 gap-3">
             {list.map((p) => (
               <ProductCard key={p.id} product={p} />

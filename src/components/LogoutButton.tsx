@@ -1,6 +1,7 @@
 "use client";
 import { signOut } from "next-auth/react";
 import { LogOutIcon } from "@/components/ui/icons";
+import { Button } from "@/components/ui/button";
 
 type IconComponent = (props: {
   size?: number;
@@ -15,14 +16,14 @@ export default function LogoutButton({
   label?: string;
 }) {
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
       onClick={() => signOut({ callbackUrl: "/" })}
-      className="w-full text-left flex items-center gap-3 p-4 hover:bg-gray-50 focus:bg-gray-50"
+      className="w-full text-left flex items-center gap-3 p-4 hover:bg-gray-50 focus:bg-gray-50 justify-start"
     >
       <Icon size={18} className="text-muted" />
       <span className="flex-1">{label}</span>
       <span className="text-muted">›</span>
-    </button>
+    </Button>
   );
 }
