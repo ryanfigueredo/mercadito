@@ -4,6 +4,32 @@ import { prisma } from "@/lib/prisma";
 export async function POST() {
   // Seed idempotente para desenvolvimento
   try {
+    const bcrypt = require('bcrypt');
+    
+    // Criar usuário Ryan
+    const ryanUser = await prisma.user.upsert({
+      where: { email: "ryan@dmtn.com.br" },
+      create: {
+        email: "ryan@dmtn.com.br",
+        name: "Ryan Figueredo",
+        password: await bcrypt.hash("123456", 10),
+        document: "12345678901",
+        phone: "11999999999",
+        addresses: {
+          create: {
+            label: "Casa",
+            street: "Rua das Flores, 123",
+            city: "São Paulo",
+            state: "SP",
+            zip: "01234-567",
+          },
+        },
+      },
+      update: {},
+      include: { addresses: true },
+    });
+
+    // Manter usuário dev original
     const user = await prisma.user.upsert({
       where: { email: "dev@mercadito.local" },
       create: {
