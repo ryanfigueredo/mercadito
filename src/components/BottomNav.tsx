@@ -1,12 +1,12 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Grid3X3, ShoppingBag, User } from "lucide-react";
+import { Home, ShoppingBag, User, Search } from "lucide-react";
 import ClientOnly from "./ClientOnly";
 
 const items = [
   { href: "/", label: "Home", Icon: Home },
-  { href: "/categorias", label: "Categorias", Icon: Grid3X3 },
+  { href: "/categorias", label: "Buscar", Icon: Search },
   { href: "/pedidos", label: "Pedidos", Icon: ShoppingBag },
   { href: "/perfil", label: "Perfil", Icon: User },
 ] as const;
