@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { getSecureImageUrl } from "@/lib/image-utils";
 
 type Product = {
   id: string;
@@ -279,11 +280,13 @@ function ProductStockCard({
         {/* Imagem do produto */}
         <div className="relative w-16 h-16 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden">
           {product.imageUrl ? (
-            <Image
-              src={product.imageUrl}
+            <img
+              src={getSecureImageUrl(product.imageUrl)}
               alt={product.name}
-              fill
-              className="object-cover"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = "/api/images/placeholder";
+              }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">

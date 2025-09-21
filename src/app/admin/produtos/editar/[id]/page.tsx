@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/icons";
 import Link from "next/link";
 import Image from "next/image";
+import { getSecureImageUrl } from "@/lib/image-utils";
 
 type Product = {
   id: string;
@@ -248,11 +249,13 @@ export default function EditarProdutoPage({
 
             <div className="relative aspect-square rounded-xl bg-gray-100 overflow-hidden mb-4">
               {product.imageUrl ? (
-                <Image
-                  src={product.imageUrl}
+                <img
+                  src={getSecureImageUrl(product.imageUrl)}
                   alt={product.name}
-                  fill
-                  className="object-cover"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = "/api/images/placeholder";
+                  }}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">

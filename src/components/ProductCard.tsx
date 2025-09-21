@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus } from "lucide-react";
+import { getSecureImageUrl } from "@/lib/image-utils";
 
 export default function ProductCard({ product }: { product: Product }) {
   const add = useCart((s) => s.add);
@@ -47,9 +48,12 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="aspect-square w-full bg-gray-50 flex items-center justify-center relative overflow-hidden">
           {product.image &&
           product.image !== "/next.svg" &&
-          product.image !== "/vercel.svg" ? (
+          product.image !== "/vercel.svg" &&
+          product.image !== "/globe.svg" &&
+          product.image !== "/file.svg" &&
+          product.image !== "/window.svg" ? (
             <img
-              src={product.image}
+              src={getSecureImageUrl(product.image)}
               alt={product.name}
               className="w-full h-full object-cover"
               onError={(e) => {
@@ -62,7 +66,10 @@ export default function ProductCard({ product }: { product: Product }) {
             className={`w-full h-full flex items-center justify-center ${
               product.image &&
               product.image !== "/next.svg" &&
-              product.image !== "/vercel.svg"
+              product.image !== "/vercel.svg" &&
+              product.image !== "/globe.svg" &&
+              product.image !== "/file.svg" &&
+              product.image !== "/window.svg"
                 ? "hidden"
                 : ""
             }`}

@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { getSecureImageUrl } from "@/lib/image-utils";
 
 type Product = {
   id: string;
@@ -42,24 +43,55 @@ export default function ProdutosPage() {
   }
 
   async function deleteProduct(productId: string) {
-    if (!confirm("Tem certeza que deseja excluir este produto?")) {
+    // Encontrar o produto para mostrar nome na confirmação
+    const product = products.find((p) => p.id === productId);
+    const productName = product ? product.name : "este produto";
+
+    if (
+      !confirm(
+        `Tem certeza que deseja excluir "${productName}"?\n\nEsta ação não pode ser desfeita.`
+      )
+    ) {
       return;
     }
 
     try {
+      console.log("Tentando excluir produto:", productId);
+
       const res = await fetch(`/api/admin/products/${productId}`, {
         method: "DELETE",
       });
 
+      console.log("Response status:", res.status);
+
       if (res.ok) {
-        await loadProducts(); // Recarregar lista
+        const result = await res.json();
+        console.log("Produto excluído:", result);
+
+        // Atualizar estado local imediatamente
+        setProducts((prev) => prev.filter((p) => p.id !== productId));
+
+        // Recarregar lista para garantir
+        await loadProducts();
+
+        alert(`Produto "${productName}" excluído com sucesso!`);
       } else {
-        const error = await res.json();
-        alert(error.error || "Erro ao excluir produto");
+        const errorData = await res.json();
+        console.error("Erro na API:", errorData);
+
+        if (errorData.code === "PRODUCT_HAS_ORDERS") {
+          alert(
+            `Não é possível excluir "${productName}" pois ele possui pedidos associados.`
+          );
+        } else if (errorData.code === "ACCESS_DENIED") {
+          alert("Você não tem permissão para excluir produtos.");
+        } else {
+          alert(errorData.error || "Erro ao excluir produto");
+        }
       }
     } catch (error) {
       console.error("Erro ao excluir produto:", error);
-      alert("Erro ao excluir produto");
+      alert("Erro de conexão ao excluir produto. Tente novamente.");
     }
   }
 
@@ -280,12 +312,13 @@ function ProductCard({
         {/* Imagem do produto */}
         <div className="w-16 h-16 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden">
           {product.imageUrl ? (
-            <Image
-              src={product.imageUrl}
+            <img
+              src={getSecureImageUrl(product.imageUrl)}
               alt={product.name}
-              width={64}
-              height={64}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = "/api/images/placeholder";
+              }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -343,9 +376,9 @@ function ProductCard({
                 variant="outline"
                 size="sm"
                 onClick={() => onDelete(product.id)}
-                className="text-red-600 hover:text-red-700 hover:border-red-300"
+                className="text-red-600 hover:text-white hover:bg-red-600 hover:border-red-600 transition-all"
               >
-                Excluir
+                🗑️ Excluir
               </Button>
             </div>
           </div>

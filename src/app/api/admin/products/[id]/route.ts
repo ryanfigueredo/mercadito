@@ -200,7 +200,11 @@ export async function DELETE(
 
     if (!existingProduct) {
       return NextResponse.json(
-        { error: "Produto não encontrado" },
+        createErrorResponse(
+          "Produto não encontrado",
+          undefined,
+          "PRODUCT_NOT_FOUND"
+        ),
         { status: 404 }
       );
     }
@@ -208,11 +212,28 @@ export async function DELETE(
     // Verificar se produto tem pedidos associados
     if (existingProduct.items.length > 0) {
       return NextResponse.json(
-        {
-          error: "Não é possível excluir produto que possui pedidos associados",
-        },
+        createErrorResponse(
+          "Não é possível excluir produto que possui pedidos associados",
+          [`Produto tem ${existingProduct.items.length} item(s) em pedidos`],
+          "PRODUCT_HAS_ORDERS"
+        ),
         { status: 400 }
       );
+    }
+
+    // Deletar imagem do S3 se existir
+    if (existingProduct.imageUrl) {
+      try {
+        const { deleteFromS3 } = await import("@/lib/aws-s3");
+        const { extractS3Path } = await import("@/lib/image-utils");
+        const s3Path = extractS3Path(existingProduct.imageUrl);
+        if (s3Path) {
+          await deleteFromS3(s3Path);
+        }
+      } catch (error) {
+        console.warn("Erro ao deletar imagem do S3:", error);
+        // Continua mesmo se falhar ao deletar imagem
+      }
     }
 
     // Deletar produto
@@ -220,16 +241,30 @@ export async function DELETE(
       where: { id },
     });
 
-    return NextResponse.json({ message: "Produto excluído com sucesso" });
+    return NextResponse.json({
+      message: "Produto excluído com sucesso",
+      deletedProduct: {
+        id: existingProduct.id,
+        name: existingProduct.name,
+        slug: existingProduct.slug,
+      },
+    });
   } catch (error: unknown) {
     console.error("Erro ao excluir produto:", error);
 
     if (error instanceof Error && error.message.includes("access_denied")) {
-      return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+      return NextResponse.json(
+        createErrorResponse("Acesso negado", undefined, "ACCESS_DENIED"),
+        { status: 403 }
+      );
     }
 
     return NextResponse.json(
-      { error: "Erro interno do servidor" },
+      createErrorResponse(
+        "Erro interno do servidor",
+        undefined,
+        "INTERNAL_ERROR"
+      ),
       { status: 500 }
     );
   }
