@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { requireAdmin } from "@/lib/admin";
 import { createErrorResponse } from "@/lib/dto-validators";
+import { handleDatabaseError, withRetry } from "@/lib/db-error-handler";
 import type { ProductResponseDTO } from "@/types/dto";
 
 export async function PATCH(
@@ -124,12 +125,24 @@ export async function PATCH(
       }
     }
 
-    // Verificar se produto existe
-    const existingProduct = await prisma.product.findUnique({
-      where: { id },
+    // Verificar se produto existe e atualizar com retry
+    const result = await withRetry(async () => {
+      const existingProduct = await prisma.product.findUnique({
+        where: { id },
+      });
+
+      if (!existingProduct) {
+        throw new Error("PRODUCT_NOT_FOUND");
+      }
+
+      // Atualizar produto
+      return await prisma.product.update({
+        where: { id },
+        data: updateData,
+      });
     });
 
-    if (!existingProduct) {
+    if (!result) {
       return NextResponse.json(
         createErrorResponse(
           "Produto não encontrado",
@@ -140,11 +153,7 @@ export async function PATCH(
       );
     }
 
-    // Atualizar produto
-    const updatedProduct = await prisma.product.update({
-      where: { id },
-      data: updateData,
-    });
+    const updatedProduct = result;
 
     // Retornar DTO de resposta
     const responseDTO: ProductResponseDTO = {
@@ -192,79 +201,114 @@ export async function DELETE(
 
     const { id } = await params;
 
-    // Verificar se produto existe
-    const existingProduct = await prisma.product.findUnique({
-      where: { id },
-      include: { items: true },
-    });
+    // Verificar se produto existe e deletar com retry
+    const result = await withRetry(async () => {
+      const existingProduct = await prisma.product.findUnique({
+        where: { id },
+        include: { items: true },
+      });
 
-    if (!existingProduct) {
-      return NextResponse.json(
-        createErrorResponse(
-          "Produto não encontrado",
-          undefined,
-          "PRODUCT_NOT_FOUND"
-        ),
-        { status: 404 }
-      );
-    }
-
-    // Verificar se produto tem pedidos associados
-    if (existingProduct.items.length > 0) {
-      return NextResponse.json(
-        createErrorResponse(
-          "Não é possível excluir produto que possui pedidos associados",
-          [`Produto tem ${existingProduct.items.length} item(s) em pedidos`],
-          "PRODUCT_HAS_ORDERS"
-        ),
-        { status: 400 }
-      );
-    }
-
-    // Deletar imagem do S3 se existir
-    if (existingProduct.imageUrl) {
-      try {
-        const { deleteFromS3 } = await import("@/lib/aws-s3");
-        const { extractS3Path } = await import("@/lib/image-utils");
-        const s3Path = extractS3Path(existingProduct.imageUrl);
-        if (s3Path) {
-          await deleteFromS3(s3Path);
-        }
-      } catch (error) {
-        console.warn("Erro ao deletar imagem do S3:", error);
-        // Continua mesmo se falhar ao deletar imagem
+      if (!existingProduct) {
+        throw new Error("PRODUCT_NOT_FOUND");
       }
-    }
 
-    // Deletar produto
-    await prisma.product.delete({
-      where: { id },
+      // Verificar se produto tem pedidos associados
+      if (existingProduct.items.length > 0) {
+        const error = new Error("PRODUCT_HAS_ORDERS");
+        (error as any).itemsCount = existingProduct.items.length;
+        throw error;
+      }
+
+      // Deletar imagem do S3 se existir
+      if (existingProduct.imageUrl) {
+        try {
+          const { deleteFromS3 } = await import("@/lib/aws-s3");
+          const { extractS3Path } = await import("@/lib/image-utils");
+          const s3Path = extractS3Path(existingProduct.imageUrl);
+          if (s3Path) {
+            await deleteFromS3(s3Path);
+          }
+        } catch (s3Error) {
+          console.warn("Erro ao deletar imagem do S3:", s3Error);
+          // Continua mesmo se falhar ao deletar imagem
+        }
+      }
+
+      // Deletar produto
+      await prisma.product.delete({
+        where: { id },
+      });
+
+      return existingProduct;
     });
+
+    if (!result) {
+      return NextResponse.json(
+        createErrorResponse(
+          "Erro ao processar exclusão",
+          undefined,
+          "DELETE_ERROR"
+        ),
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       message: "Produto excluído com sucesso",
       deletedProduct: {
-        id: existingProduct.id,
-        name: existingProduct.name,
-        slug: existingProduct.slug,
+        id: result.id,
+        name: result.name,
+        slug: result.slug,
       },
     });
   } catch (error: unknown) {
     console.error("Erro ao excluir produto:", error);
 
-    if (error instanceof Error && error.message.includes("access_denied")) {
+    // Tratar erros específicos
+    if (error instanceof Error) {
+      if (error.message === "PRODUCT_NOT_FOUND") {
+        return NextResponse.json(
+          createErrorResponse(
+            "Produto não encontrado",
+            undefined,
+            "PRODUCT_NOT_FOUND"
+          ),
+          { status: 404 }
+        );
+      }
+
+      if (error.message === "PRODUCT_HAS_ORDERS") {
+        const itemsCount = (error as any).itemsCount || 0;
+        return NextResponse.json(
+          createErrorResponse(
+            "Não é possível excluir produto que possui pedidos associados",
+            [`Produto tem ${itemsCount} item(s) em pedidos`],
+            "PRODUCT_HAS_ORDERS"
+          ),
+          { status: 400 }
+        );
+      }
+
+      if (error.message.includes("access_denied")) {
+        return NextResponse.json(
+          createErrorResponse("Acesso negado", undefined, "ACCESS_DENIED"),
+          { status: 403 }
+        );
+      }
+    }
+
+    // Tratar erros de banco de dados
+    const dbError = handleDatabaseError(error);
+
+    if (dbError.code === "CONNECTION_ERROR") {
       return NextResponse.json(
-        createErrorResponse("Acesso negado", undefined, "ACCESS_DENIED"),
-        { status: 403 }
+        createErrorResponse(dbError.message, undefined, dbError.code),
+        { status: 503 } // Service Unavailable
       );
     }
 
     return NextResponse.json(
-      createErrorResponse(
-        "Erro interno do servidor",
-        undefined,
-        "INTERNAL_ERROR"
-      ),
+      createErrorResponse(dbError.message, undefined, dbError.code),
       { status: 500 }
     );
   }

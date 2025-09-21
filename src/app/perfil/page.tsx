@@ -13,6 +13,7 @@ import {
   FileTextIcon,
   HelpCircleIcon,
   LogOutIcon,
+  BarChart3Icon,
 } from "@/components/ui/icons";
 import { redirect } from "next/navigation";
 import LogoutButton from "@/components/LogoutButton";
@@ -45,7 +46,13 @@ export default async function PerfilPage() {
   const dbUser = session?.user?.email
     ? await prisma.user.findUnique({
         where: { email: session.user.email },
-        include: { addresses: true },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isAdmin: true,
+          addresses: true,
+        },
       })
     : null;
 
@@ -97,6 +104,14 @@ export default async function PerfilPage() {
             </section>
 
             <nav className="mt-4 rounded-2xl border divide-y">
+              {dbUser.isAdmin && (
+                <MenuItem
+                  href="/admin"
+                  Icon={BarChart3Icon}
+                  label="Acessar Admin"
+                />
+              )}
+
               <MenuItem
                 href="/perfil/editar"
                 Icon={PencilIcon}
@@ -132,17 +147,9 @@ export default async function PerfilPage() {
                 Icon={HelpCircleIcon}
                 label="Ajuda e Suporte"
               />
+
               <LogoutButton />
             </nav>
-
-            <div className="mt-4">
-              <Link
-                href="/admin"
-                className="inline-flex items-center justify-center h-11 px-4 rounded-2xl border border-gray-300 bg-white text-sm"
-              >
-                Acessar Admin
-              </Link>
-            </div>
           </>
         )}
       </main>

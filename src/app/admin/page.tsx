@@ -20,28 +20,24 @@ export default async function AdminHome() {
       title: "Pedidos Pendentes",
       value: pendingOrders,
       icon: <ShoppingCartIcon size={24} />,
-      color: "bg-orange-500",
       href: "/admin/pedidos",
     },
     {
       title: "Total de Pedidos",
       value: totalOrders,
       icon: <TrendingUpIcon size={24} />,
-      color: "bg-blue-500",
       href: "/admin/pedidos",
     },
     {
       title: "Produtos Cadastrados",
       value: totalProducts,
       icon: <PackageIcon size={24} />,
-      color: "bg-green-500",
       href: "/admin/produtos",
     },
     {
       title: "Vendas do Mês",
       value: "R$ 0,00",
       icon: <DollarSignIcon size={24} />,
-      color: "bg-purple-500",
       href: "/admin/pedidos",
     },
   ];
@@ -52,28 +48,24 @@ export default async function AdminHome() {
       title: "Gerenciar Pedidos",
       desc: "Aprovar, enviar e entregar",
       icon: <ShoppingCartIcon size={20} />,
-      color: "bg-[#F8B075]",
     },
     {
       href: "/admin/produtos",
       title: "Produtos",
       desc: "Cadastrar e editar produtos",
       icon: <PackageIcon size={20} />,
-      color: "bg-blue-500",
     },
     {
       href: "/admin/produtos/novo",
       title: "Novo Produto",
       desc: "Adicionar produto ao catálogo",
       icon: <PackageIcon size={20} />,
-      color: "bg-green-500",
     },
     {
       href: "/admin/estoque",
       title: "Controle de Estoque",
       desc: "Verificar quantidades",
       icon: <TrendingUpIcon size={20} />,
-      color: "bg-purple-500",
     },
   ];
 
@@ -93,7 +85,7 @@ export default async function AdminHome() {
             >
               <div className="flex items-center gap-3 lg:flex-col lg:items-start lg:gap-4">
                 <div
-                  className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl ${stat.color} flex items-center justify-center text-white`}
+                  className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center text-black`}
                 >
                   {stat.icon}
                 </div>
@@ -126,7 +118,7 @@ export default async function AdminHome() {
                 className="bg-white rounded-2xl p-4 lg:p-5 border hover:shadow-md transition-all duration-200 flex items-center gap-4"
               >
                 <div
-                  className={`w-12 h-12 lg:w-14 lg:h-14 rounded-xl ${action.color} flex items-center justify-center text-white`}
+                  className={`w-12 h-12 lg:w-14 lg:h-14 rounded-xl flex items-center justify-center text-white`}
                 >
                   {action.icon}
                 </div>
