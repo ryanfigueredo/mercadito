@@ -32,24 +32,44 @@ export const createProductSchema = z.object({
   promoText: z.string().max(50, "Texto promocional muito longo").optional(),
 }) satisfies z.ZodType<CreateProductDTO>;
 
-export const updateProductSchema = z.object({
-  name: z
-    .string()
-    .min(2, "Nome deve ter pelo menos 2 caracteres")
-    .max(100, "Nome muito longo")
-    .optional(),
-  category: z
-    .enum(["Grãos", "Bebidas", "Padaria", "Limpeza", "Hortifruti", "Diversos"])
-    .optional(),
-  priceCents: z.number().min(1, "Preço deve ser maior que zero").optional(),
-  stock: z
-    .number()
-    .min(0, "Estoque não pode ser negativo")
-    .int("Estoque deve ser um número inteiro")
-    .optional(),
-  imageUrl: z.string().min(1, "URL da imagem não pode estar vazia").optional(),
-  promoText: z.string().max(50, "Texto promocional muito longo").optional(),
-}) satisfies z.ZodType<UpdateProductDTO>;
+export const updateProductSchema = z
+  .object({
+    name: z
+      .string()
+      .min(2, "Nome deve ter pelo menos 2 caracteres")
+      .max(100, "Nome muito longo")
+      .optional(),
+    category: z
+      .enum([
+        "Grãos",
+        "Bebidas",
+        "Padaria",
+        "Limpeza",
+        "Hortifruti",
+        "Diversos",
+      ])
+      .optional(),
+    priceCents: z.number().min(1, "Preço deve ser maior que zero").optional(),
+    stock: z
+      .number()
+      .min(0, "Estoque não pode ser negativo")
+      .int("Estoque deve ser um número inteiro")
+      .optional(),
+    imageUrl: z
+      .string()
+      .min(1, "URL da imagem não pode estar vazia")
+      .optional(),
+    promoText: z
+      .string()
+      .max(50, "Texto promocional muito longo")
+      .nullable()
+      .optional(),
+  })
+  .partial() // Todos os campos são opcionais
+  .refine(
+    (data) => Object.keys(data).length > 0,
+    "Pelo menos um campo deve ser fornecido para atualização"
+  ) satisfies z.ZodType<UpdateProductDTO>;
 
 // Schema específico para upload de imagem
 export const updateProductImageSchema = z.object({
@@ -155,13 +175,31 @@ export function validateDTO<T>(
       return { success: true, data: result.data };
     }
 
-    // Log apenas em desenvolvimento
-    if (process.env.NODE_ENV === "development") {
-      console.error("Erros de validação:", result.error.errors);
+    // Log detalhado para debug
+    console.error("=== ERRO DE VALIDAÇÃO DTO ===");
+    console.error("Dados recebidos:", JSON.stringify(data, null, 2));
+    console.error("Result:", result);
+    console.error("Result.error:", result.error);
+    console.error("Result.error.errors:", result.error?.errors);
+
+    // Verificar se errors existe
+    if (
+      !result.error ||
+      !result.error.errors ||
+      !Array.isArray(result.error.errors)
+    ) {
+      console.error("Estrutura de erro inválida:", result.error);
+      return {
+        success: false,
+        errors: ["Erro de validação - estrutura inválida"],
+      };
     }
 
     const errors = result.error.errors.map(
-      (err) => `${err.path.join(".")}: ${err.message}`
+      (err) =>
+        `${err.path?.join?.(".") || "campo"}: ${
+          err.message || "erro desconhecido"
+        }`
     );
     return { success: false, errors };
   } catch (error) {

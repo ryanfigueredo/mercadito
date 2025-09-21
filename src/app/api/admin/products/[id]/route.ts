@@ -3,12 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { requireAdmin } from "@/lib/admin";
-import {
-  updateProductSchema,
-  validateDTO,
-  createErrorResponse,
-} from "@/lib/dto-validators";
-import type { UpdateProductDTO, ProductResponseDTO } from "@/types/dto";
+import { createErrorResponse } from "@/lib/dto-validators";
+import type { ProductResponseDTO } from "@/types/dto";
 
 export async function PATCH(
   req: NextRequest,
@@ -33,19 +29,100 @@ export async function PATCH(
       );
     }
 
-    const validation = validateDTO(updateProductSchema, body);
-    if (!validation.success) {
-      return NextResponse.json(
-        createErrorResponse(
-          "Dados inválidos",
-          validation.errors,
-          "VALIDATION_ERROR"
-        ),
-        { status: 400 }
-      );
+    // Validação manual simples para evitar problemas com Zod
+    const updateData: any = {};
+
+    // Validar campos individualmente
+    if (body.name !== undefined) {
+      if (typeof body.name !== "string" || body.name.trim().length < 2) {
+        return NextResponse.json(
+          createErrorResponse(
+            "Nome deve ter pelo menos 2 caracteres",
+            undefined,
+            "VALIDATION_ERROR"
+          ),
+          { status: 400 }
+        );
+      }
+      updateData.name = body.name.trim();
     }
 
-    const updateData: UpdateProductDTO = validation.data;
+    if (body.category !== undefined) {
+      const validCategories = [
+        "Grãos",
+        "Bebidas",
+        "Padaria",
+        "Limpeza",
+        "Hortifruti",
+        "Diversos",
+      ];
+      if (!validCategories.includes(body.category)) {
+        return NextResponse.json(
+          createErrorResponse(
+            "Categoria inválida",
+            undefined,
+            "VALIDATION_ERROR"
+          ),
+          { status: 400 }
+        );
+      }
+      updateData.category = body.category;
+    }
+
+    if (body.priceCents !== undefined) {
+      const price = Number(body.priceCents);
+      if (isNaN(price) || price <= 0) {
+        return NextResponse.json(
+          createErrorResponse(
+            "Preço deve ser maior que zero",
+            undefined,
+            "VALIDATION_ERROR"
+          ),
+          { status: 400 }
+        );
+      }
+      updateData.priceCents = Math.round(price);
+    }
+
+    if (body.stock !== undefined) {
+      const stock = Number(body.stock);
+      if (isNaN(stock) || stock < 0) {
+        return NextResponse.json(
+          createErrorResponse(
+            "Estoque não pode ser negativo",
+            undefined,
+            "VALIDATION_ERROR"
+          ),
+          { status: 400 }
+        );
+      }
+      updateData.stock = Math.floor(stock);
+    }
+
+    if (body.imageUrl !== undefined) {
+      if (
+        typeof body.imageUrl !== "string" ||
+        body.imageUrl.trim().length === 0
+      ) {
+        return NextResponse.json(
+          createErrorResponse(
+            "URL da imagem inválida",
+            undefined,
+            "VALIDATION_ERROR"
+          ),
+          { status: 400 }
+        );
+      }
+      updateData.imageUrl = body.imageUrl.trim();
+    }
+
+    if (body.promoText !== undefined) {
+      if (body.promoText === null) {
+        updateData.promoText = null;
+      } else if (typeof body.promoText === "string") {
+        updateData.promoText = body.promoText.trim() || null;
+      }
+    }
 
     // Verificar se produto existe
     const existingProduct = await prisma.product.findUnique({
