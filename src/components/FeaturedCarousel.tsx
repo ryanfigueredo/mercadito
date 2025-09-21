@@ -4,12 +4,36 @@ import { useState, useEffect } from "react";
 const banners = [
   {
     id: 1,
-    color: "bg-[#d7c4ff]",
-    title: "Voucher imperdível",
+    color: "bg-gradient-to-br from-[#F8B075] to-[#e69a66]",
+    title: "Essenciais",
+    subtitle: "Produtos básicos do dia a dia",
+    category: "Grãos",
+    icon: "🌾",
   },
-  { id: 2, color: "bg-[#ffd7ef]", title: "Frete grátis hoje" },
-  { id: 3, color: "bg-[#d1f5ff]", title: "Combos da semana" },
-  { id: 4, color: "bg-[#ffe8d3]", title: "Descontos progressivos" },
+  {
+    id: 2,
+    color: "bg-gradient-to-br from-[#4ade80] to-[#22c55e]",
+    title: "Hortifruti",
+    subtitle: "Frutas e verduras fresquinhas",
+    category: "Hortifruti",
+    icon: "🥬",
+  },
+  {
+    id: 3,
+    color: "bg-gradient-to-br from-[#60a5fa] to-[#3b82f6]",
+    title: "Bebidas",
+    subtitle: "Refrescantes e saborosas",
+    category: "Bebidas",
+    icon: "🥤",
+  },
+  {
+    id: 4,
+    color: "bg-gradient-to-br from-[#a78bfa] to-[#8b5cf6]",
+    title: "Limpeza",
+    subtitle: "Casa sempre limpa",
+    category: "Limpeza",
+    icon: "🧽",
+  },
 ];
 
 export default function FeaturedCarousel() {
@@ -38,9 +62,23 @@ export default function FeaturedCarousel() {
           {banners.map((banner) => (
             <div
               key={banner.id}
-              className={`h-56 w-full shrink-0 rounded-2xl ${banner.color} grid place-items-center`}
+              className={`h-56 w-full shrink-0 rounded-2xl ${banner.color} p-6 flex flex-col justify-center cursor-pointer hover:scale-[1.02] transition-transform`}
+              onClick={() => {
+                // Filtrar por categoria quando clicar no banner
+                const event = new CustomEvent("filterByCategory", {
+                  detail: { category: banner.category },
+                });
+                window.dispatchEvent(event);
+              }}
             >
-              <span className="text-lg font-medium">{banner.title}</span>
+              <div className="text-white">
+                <div className="text-4xl mb-3">{banner.icon}</div>
+                <h3 className="text-2xl font-bold mb-2">{banner.title}</h3>
+                <p className="text-white/90 text-sm">{banner.subtitle}</p>
+                <div className="mt-4 inline-flex items-center text-sm font-medium">
+                  Ver produtos <span className="ml-2">→</span>
+                </div>
+              </div>
             </div>
           ))}
         </div>

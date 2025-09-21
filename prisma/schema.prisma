@@ -57,12 +57,20 @@ model Order {
   userId          String
   status          OrderStatus  @default(PENDING)
   totalCents      Int
+  shippingCents   Int          @default(2000) // Valor do frete em centavos (R$ 20,00)
   items           OrderItem[]
-  paymentMethod   String?      // 'pagarme_pix', 'pagarme_credit'
+  paymentMethod   String?      // 'pagarme_pix', 'pagarme_credit', 'delivery'
   pagarmeOrderId  String?      // ID do pedido no Pagar.me
   pagarmeChargeId String?      // ID da cobrança no Pagar.me
   pixQrCode       String?      // QR Code PIX
   pixQrCodeUrl    String?      // URL do QR Code PIX
+  
+  // Endereço de entrega
+  deliveryAddress String       // Endereço completo formatado
+  deliveryCity    String       // Cidade
+  deliveryState   String       // Estado
+  deliveryZip     String       // CEP
+  
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 }

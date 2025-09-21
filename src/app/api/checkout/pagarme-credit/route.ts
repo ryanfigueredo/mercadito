@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
 
-    const { items, cardData } = (await req.json()) as {
+    const { items, cardData, deliveryAddress } = (await req.json()) as {
       items: Array<{
         id: string;
         name: string;
@@ -31,6 +31,12 @@ export async function POST(req: NextRequest) {
           city: string;
           state: string;
         };
+      };
+      deliveryAddress: {
+        street: string;
+        city: string;
+        state: string;
+        zip: string;
       };
     };
     if (!Array.isArray(items) || items.length === 0) {
@@ -81,17 +87,33 @@ export async function POST(req: NextRequest) {
     const totalCents = itemsTotalCents + freightCents;
 
     // Buscar produtos no banco usando os slugs do carrinho
-    const productSlugs = items.map(item => item.id);
+    const productSlugs = items.map((item) => item.id);
     const dbProducts = await prisma.product.findMany({
-      where: { slug: { in: productSlugs } }
+      where: { slug: { in: productSlugs } },
     });
 
     // Validar se todos os produtos existem
     if (dbProducts.length !== items.length) {
-      const foundSlugs = dbProducts.map(p => p.slug);
-      const missingSlugs = productSlugs.filter(slug => !foundSlugs.includes(slug));
+      const foundSlugs = dbProducts.map((p) => p.slug);
+      const missingSlugs = productSlugs.filter(
+        (slug) => !foundSlugs.includes(slug)
+      );
       return NextResponse.json(
-        { error: `Produtos não encontrados: ${missingSlugs.join(', ')}` },
+        { error: `Produtos não encontrados: ${missingSlugs.join(", ")}` },
+        { status: 400 }
+      );
+    }
+
+    // Validar endereço de entrega
+    if (
+      !deliveryAddress ||
+      !deliveryAddress.street ||
+      !deliveryAddress.city ||
+      !deliveryAddress.state ||
+      !deliveryAddress.zip
+    ) {
+      return NextResponse.json(
+        { error: "Endereço de entrega é obrigatório" },
         { status: 400 }
       );
     }
@@ -102,10 +124,15 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         status: "PENDING",
         totalCents,
+        shippingCents: freightCents,
         paymentMethod: "pagarme_credit",
+        deliveryAddress: deliveryAddress.street,
+        deliveryCity: deliveryAddress.city,
+        deliveryState: deliveryAddress.state,
+        deliveryZip: deliveryAddress.zip,
         items: {
           create: items.map((item) => {
-            const dbProduct = dbProducts.find(p => p.slug === item.id)!;
+            const dbProduct = dbProducts.find((p) => p.slug === item.id)!;
             return {
               productId: dbProduct.id, // usar o ID real do banco
               quantity: item.quantity || 1,

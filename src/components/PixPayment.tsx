@@ -8,9 +8,19 @@ import type { PaymentData } from "@/types";
 interface PixPaymentProps {
   onSuccess: (data: PaymentData) => void;
   onError: (error: string) => void;
+  deliveryAddress: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
 }
 
-export default function PixPayment({ onSuccess, onError }: PixPaymentProps) {
+export default function PixPayment({
+  onSuccess,
+  onError,
+  deliveryAddress,
+}: PixPaymentProps) {
   const [loading, setLoading] = useState(false);
   const [pixData, setPixData] = useState<PaymentData | null>(null);
   const items = useCart((s) => s.items);
@@ -28,6 +38,7 @@ export default function PixPayment({ onSuccess, onError }: PixPaymentProps) {
             price: item.price,
             quantity: item.qty,
           })),
+          deliveryAddress,
         }),
       });
 

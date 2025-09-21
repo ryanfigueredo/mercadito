@@ -10,11 +10,18 @@ import type { PaymentData, CardData } from "@/types";
 interface CreditCardPaymentProps {
   onSuccess: (data: PaymentData) => void;
   onError: (error: string) => void;
+  deliveryAddress: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
 }
 
 export default function CreditCardPayment({
   onSuccess,
   onError,
+  deliveryAddress,
 }: CreditCardPaymentProps) {
   const [loading, setLoading] = useState(false);
   const [cardData, setCardData] = useState<CardData>({
@@ -45,6 +52,7 @@ export default function CreditCardPayment({
             price: item.price,
             quantity: item.qty,
           })),
+          deliveryAddress,
           cardData: {
             number: cardData.number.replace(/\s/g, ""),
             holderName: cardData.holderName,

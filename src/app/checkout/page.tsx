@@ -1,12 +1,16 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useCart } from "@/lib/cart";
 import Topbar from "@/components/Topbar";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import PixPayment from "@/components/PixPayment";
 import CreditCardPayment from "@/components/CreditCardPayment";
+import DeliveryPayment from "@/components/DeliveryPayment";
+import AddressSelector, { type Address } from "@/components/AddressSelector";
+import { CreditCard, Truck } from "lucide-react";
 
 export default function CheckoutPage() {
   const { data: session, status } = useSession();
@@ -25,11 +29,15 @@ export default function CheckoutPage() {
     );
   }
 
-  const [paymentMethod, setPaymentMethod] = useState<"pix" | "credit" | null>(
-    null
-  );
+  const [step, setStep] = useState<"address" | "payment">("address");
+  const [paymentMethod, setPaymentMethod] = useState<
+    "pix" | "credit" | "delivery" | null
+  >(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [userAddresses, setUserAddresses] = useState<Address[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const [loadingAddresses, setLoadingAddresses] = useState(true);
 
   const handlePaymentSuccess = () => {
     setPaymentSuccess(true);
@@ -41,6 +49,53 @@ export default function CheckoutPage() {
     setPaymentError(error);
     setPaymentSuccess(false);
   };
+
+  const handleContinueToPayment = () => {
+    if (selectedAddress) {
+      setStep("payment");
+    }
+  };
+
+  const handleBackToAddress = () => {
+    setStep("address");
+    setPaymentMethod(null);
+  };
+
+  const loadUserAddresses = async () => {
+    try {
+      const response = await fetch("/api/user/addresses");
+      if (response.ok) {
+        const addresses = await response.json();
+        setUserAddresses(addresses);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar endereços:", error);
+    } finally {
+      setLoadingAddresses(false);
+    }
+  };
+
+  const handleAddressCreate = async (addressData: Omit<Address, "id">) => {
+    const response = await fetch("/api/user/addresses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(addressData),
+    });
+
+    if (!response.ok) {
+      throw new Error("Erro ao criar endereço");
+    }
+
+    const newAddress = await response.json();
+    setUserAddresses([...userAddresses, newAddress]);
+    setSelectedAddress(newAddress);
+  };
+
+  useEffect(() => {
+    if (session) {
+      loadUserAddresses();
+    }
+  }, [session]);
 
   if (status === "loading") {
     return (
@@ -117,9 +172,21 @@ export default function CheckoutPage() {
     <div className="min-h-dvh">
       <Topbar />
       <main className="mx-auto max-w-sm px-4 pb-32">
-        <h1 className="text-2xl font-bold mt-4">Finalizar Pedido</h1>
+        <div className="flex items-center justify-between mt-4 mb-2">
+          <h1 className="text-2xl font-bold">
+            {step === "address" ? "Endereço de Entrega" : "Finalizar Pedido"}
+          </h1>
+          {step === "payment" && (
+            <button
+              onClick={handleBackToAddress}
+              className="text-[#F8B075] font-medium text-sm"
+            >
+              ← Voltar
+            </button>
+          )}
+        </div>
 
-        {/* Resumo dos itens */}
+        {/* Resumo dos itens - sempre visível */}
         <div className="mt-6">
           <h2 className="text-lg font-semibold mb-3">Resumo do Pedido</h2>
           <div className="rounded-2xl border bg-white overflow-hidden">
@@ -141,27 +208,32 @@ export default function CheckoutPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center rounded-xl border border-gray-200 bg-gray-50">
-                    <button
-                      type="button"
-                      aria-label="Diminuir"
-                      className="h-8 w-8 flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-l-xl"
-                      onClick={() => dec(i.id)}
-                    >
-                      −
-                    </button>
-                    <span className="px-3 text-sm min-w-[40px] text-center font-medium">
-                      {i.qty}
-                    </span>
-                    <button
-                      type="button"
-                      aria-label="Aumentar"
-                      className="h-8 w-8 flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-r-xl"
-                      onClick={() => inc(i.id)}
-                    >
-                      +
-                    </button>
-                  </div>
+                  {step === "address" && (
+                    <div className="flex items-center rounded-xl border border-gray-200 bg-gray-50">
+                      <button
+                        type="button"
+                        aria-label="Diminuir"
+                        className="h-8 w-8 flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-l-xl"
+                        onClick={() => dec(i.id)}
+                      >
+                        −
+                      </button>
+                      <span className="px-3 text-sm min-w-[40px] text-center font-medium">
+                        {i.qty}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label="Aumentar"
+                        className="h-8 w-8 flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-r-xl"
+                        onClick={() => inc(i.id)}
+                      >
+                        +
+                      </button>
+                    </div>
+                  )}
+                  {step === "payment" && (
+                    <span className="text-sm text-gray-600">{i.qty}x</span>
+                  )}
                   <p className="font-semibold min-w-[80px] text-right text-gray-900">
                     R$ {(i.qty * i.price).toFixed(2)}
                   </p>
@@ -172,22 +244,24 @@ export default function CheckoutPage() {
         </div>
 
         {/* Total */}
-        <div className="mt-4 p-4 rounded-2xl bg-gray-50 border">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-600">Subtotal</span>
-            <span className="font-medium">R$ {total.toFixed(2)}</span>
+        {items.length > 0 && (
+          <div className="mt-4 p-4 rounded-2xl bg-gray-50 border">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-gray-600">Subtotal</span>
+              <span className="font-medium">R$ {total.toFixed(2)}</span>
+            </div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-gray-600">Frete</span>
+              <span className="font-medium">R$ 20,00</span>
+            </div>
+            <div className="border-t pt-2 flex items-center justify-between">
+              <span className="text-lg font-semibold text-gray-900">Total</span>
+              <span className="text-lg font-bold text-[#F8B075]">
+                R$ {(total + 20).toFixed(2)}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-600">Frete</span>
-            <span className="font-medium">R$ 20,00</span>
-          </div>
-          <div className="border-t pt-2 flex items-center justify-between">
-            <span className="text-lg font-semibold text-gray-900">Total</span>
-            <span className="text-lg font-bold text-[#F8B075]">
-              R$ {(total + 20).toFixed(2)}
-            </span>
-          </div>
-        </div>
+        )}
 
         {paymentError && (
           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -195,49 +269,104 @@ export default function CheckoutPage() {
           </div>
         )}
 
-        {!paymentMethod && (
+        {/* Etapa 1: Seleção de Endereço */}
+        {step === "address" && items.length > 0 && (
           <div className="mt-6">
-            <h2 className="text-lg font-semibold mb-4">Método de Pagamento</h2>
+            {loadingAddresses ? (
+              <div className="text-center py-8">
+                <div className="animate-spin w-8 h-8 border-2 border-[#F8B075] border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p className="text-gray-500">Carregando endereços...</p>
+              </div>
+            ) : (
+              <>
+                <AddressSelector
+                  userAddresses={userAddresses}
+                  selectedAddress={selectedAddress}
+                  onAddressSelect={setSelectedAddress}
+                  onAddressCreate={handleAddressCreate}
+                />
 
-            <div className="space-y-3">
-              <button
-                className="w-full p-4 rounded-2xl border-2 border-gray-200 bg-white hover:border-[#F8B075] hover:bg-orange-50 transition-all duration-200 flex items-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={() => setPaymentMethod("pix")}
-                disabled={items.length === 0}
-              >
-                <div className="w-12 h-12 rounded-xl bg-[#F8B075] flex items-center justify-center text-white text-xl">
-                  📱
-                </div>
-                <div className="flex-1 text-left">
-                  <h3 className="font-semibold text-gray-900">PIX</h3>
-                  <p className="text-sm text-gray-500">Pagamento instantâneo</p>
-                </div>
-                <div className="text-gray-400">→</div>
-              </button>
-
-              <button
-                className="w-full p-4 rounded-2xl border-2 border-gray-200 bg-white hover:border-[#F8B075] hover:bg-orange-50 transition-all duration-200 flex items-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={() => setPaymentMethod("credit")}
-                disabled={items.length === 0}
-              >
-                <div className="w-12 h-12 rounded-xl bg-[#F8B075] flex items-center justify-center text-white text-xl">
-                  💳
-                </div>
-                <div className="flex-1 text-left">
-                  <h3 className="font-semibold text-gray-900">
-                    Cartão de Crédito
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    Parcelamento disponível
-                  </p>
-                </div>
-                <div className="text-gray-400">→</div>
-              </button>
-            </div>
+                {selectedAddress && (
+                  <Button
+                    onClick={handleContinueToPayment}
+                    className="w-full h-12 mt-4 bg-[#F8B075] hover:bg-[#e69a66]"
+                  >
+                    Continuar para Pagamento
+                  </Button>
+                )}
+              </>
+            )}
           </div>
         )}
 
-        {paymentMethod === "pix" && (
+        {/* Etapa 2: Seleção de Método de Pagamento */}
+        {step === "payment" &&
+          !paymentMethod &&
+          items.length > 0 &&
+          selectedAddress && (
+            <div className="mt-6">
+              <h2 className="text-lg font-semibold mb-4">
+                Método de Pagamento
+              </h2>
+
+              <div className="space-y-3">
+                <button
+                  className="w-full p-4 rounded-2xl border-2 border-gray-200 bg-white hover:border-[#F8B075] hover:bg-orange-50 transition-all duration-200 flex items-center gap-4"
+                  onClick={() => setPaymentMethod("pix")}
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-slate-200 flex items-center justify-center text-white text-xl">
+                    <Image src="/pix.svg" alt="PIX" width={24} height={24} />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <h3 className="font-semibold text-gray-900">PIX</h3>
+                    <p className="text-sm text-gray-500">
+                      Pagamento instantâneo
+                    </p>
+                  </div>
+                  <div className="text-gray-400">→</div>
+                </button>
+
+                <button
+                  className="w-full p-4 rounded-2xl border-2 border-gray-200 bg-white hover:border-[#F8B075] hover:bg-orange-50 transition-all duration-200 flex items-center gap-4"
+                  onClick={() => setPaymentMethod("credit")}
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-slate-200 flex items-center justify-center text-white text-xl">
+                    <CreditCard width={24} height={24} className="text-black" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <h3 className="font-semibold text-gray-900">
+                      Cartão de Crédito
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      Parcelamento disponível
+                    </p>
+                  </div>
+                  <div className="text-gray-400">→</div>
+                </button>
+
+                <button
+                  className="w-full p-4 rounded-2xl border-2 border-gray-200 bg-white hover:border-[#F8B075] hover:bg-orange-50 transition-all duration-200 flex items-center gap-4"
+                  onClick={() => setPaymentMethod("delivery")}
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-slate-200 flex items-center justify-center text-white text-xl">
+                    <Truck width={24} height={24} className="text-black" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <h3 className="font-semibold text-gray-900">
+                      Pagamento na Entrega
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      Pague diretamente ao entregador
+                    </p>
+                  </div>
+                  <div className="text-gray-400">→</div>
+                </button>
+              </div>
+            </div>
+          )}
+
+        {/* Componentes de Pagamento */}
+        {paymentMethod === "pix" && selectedAddress && (
           <div className="mt-6">
             <div className="flex items-center gap-3 mb-6">
               <button
@@ -251,11 +380,17 @@ export default function CheckoutPage() {
             <PixPayment
               onSuccess={handlePaymentSuccess}
               onError={handlePaymentError}
+              deliveryAddress={{
+                street: selectedAddress.street,
+                city: selectedAddress.city,
+                state: selectedAddress.state,
+                zip: selectedAddress.zip,
+              }}
             />
           </div>
         )}
 
-        {paymentMethod === "credit" && (
+        {paymentMethod === "credit" && selectedAddress && (
           <div className="mt-6">
             <div className="flex items-center gap-3 mb-6">
               <button
@@ -269,11 +404,42 @@ export default function CheckoutPage() {
             <CreditCardPayment
               onSuccess={handlePaymentSuccess}
               onError={handlePaymentError}
+              deliveryAddress={{
+                street: selectedAddress.street,
+                city: selectedAddress.city,
+                state: selectedAddress.state,
+                zip: selectedAddress.zip,
+              }}
             />
           </div>
         )}
 
-        {!paymentMethod && (
+        {paymentMethod === "delivery" && selectedAddress && (
+          <div className="mt-6">
+            <div className="flex items-center gap-3 mb-6">
+              <button
+                onClick={() => setPaymentMethod(null)}
+                className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+              >
+                ←
+              </button>
+              <h2 className="text-lg font-semibold">Pagamento na Entrega</h2>
+            </div>
+            <DeliveryPayment
+              onSuccess={handlePaymentSuccess}
+              onError={handlePaymentError}
+              deliveryAddress={{
+                street: selectedAddress.street,
+                city: selectedAddress.city,
+                state: selectedAddress.state,
+                zip: selectedAddress.zip,
+              }}
+            />
+          </div>
+        )}
+
+        {/* Ações do carrinho */}
+        {step === "address" && !paymentMethod && (
           <div className="mt-6 space-y-3">
             <Button
               asChild

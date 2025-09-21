@@ -243,6 +243,28 @@ export const ArrowLeftIcon = createIcon(
     strokeLinejoin="round"
   />
 );
+
+export const PlusIcon = createIcon(
+  <path
+    d="M12 5v14M5 12h14"
+    stroke="currentColor"
+    strokeWidth="2"
+    fill="none"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+);
+
+export const CheckIcon = createIcon(
+  <path
+    d="M20 6L9 17l-5-5"
+    stroke="currentColor"
+    strokeWidth="2"
+    fill="none"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+);
 const icons = {
   MailIcon,
   LockIcon,
