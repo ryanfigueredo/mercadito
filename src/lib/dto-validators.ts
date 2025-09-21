@@ -47,9 +47,14 @@ export const updateProductSchema = z.object({
     .min(0, "Estoque não pode ser negativo")
     .int("Estoque deve ser um número inteiro")
     .optional(),
-  imageUrl: z.string().url("URL da imagem inválida").optional(),
+  imageUrl: z.string().min(1, "URL da imagem não pode estar vazia").optional(),
   promoText: z.string().max(50, "Texto promocional muito longo").optional(),
 }) satisfies z.ZodType<UpdateProductDTO>;
+
+// Schema específico para upload de imagem
+export const updateProductImageSchema = z.object({
+  imageUrl: z.string().min(1, "URL da imagem é obrigatória"),
+});
 
 // Validators para Orders
 const orderItemSchema = z.object({
@@ -143,16 +148,29 @@ export function validateDTO<T>(
       success: false;
       errors: string[];
     } {
-  const result = schema.safeParse(data);
+  try {
+    const result = schema.safeParse(data);
 
-  if (result.success) {
-    return { success: true, data: result.data };
+    if (result.success) {
+      return { success: true, data: result.data };
+    }
+
+    // Log apenas em desenvolvimento
+    if (process.env.NODE_ENV === "development") {
+      console.error("Erros de validação:", result.error.errors);
+    }
+
+    const errors = result.error.errors.map(
+      (err) => `${err.path.join(".")}: ${err.message}`
+    );
+    return { success: false, errors };
+  } catch (error) {
+    console.error("Erro no validateDTO:", error);
+    return {
+      success: false,
+      errors: ["Erro interno na validação"],
+    };
   }
-
-  const errors = result.error.errors.map(
-    (err) => `${err.path.join(".")}: ${err.message}`
-  );
-  return { success: false, errors };
 }
 
 // Helper para criar respostas de erro padronizadas

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,9 +35,10 @@ const categories = [
 export default function EditarProdutoPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
+  const resolvedParams = use(params);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -57,7 +58,9 @@ export default function EditarProdutoPage({
     try {
       const res = await fetch(`/api/admin/products`);
       const products = await res.json();
-      const foundProduct = products.find((p: Product) => p.id === params.id);
+      const foundProduct = products.find(
+        (p: Product) => p.id === resolvedParams.id
+      );
 
       if (!foundProduct) {
         router.push("/admin/produtos");
@@ -107,7 +110,7 @@ export default function EditarProdutoPage({
     setSaving(true);
 
     try {
-      const res = await fetch(`/api/admin/products/${params.id}`, {
+      const res = await fetch(`/api/admin/products/${resolvedParams.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -140,7 +143,7 @@ export default function EditarProdutoPage({
       // Upload para S3
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("productId", params.id);
+      formData.append("productId", resolvedParams.id);
 
       const uploadRes = await fetch("/api/admin/products/upload-image", {
         method: "POST",
@@ -154,11 +157,14 @@ export default function EditarProdutoPage({
       const { imageUrl } = await uploadRes.json();
 
       // Atualizar produto com nova imagem
-      const updateRes = await fetch(`/api/admin/products/${params.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl }),
-      });
+      const updateRes = await fetch(
+        `/api/admin/products/${resolvedParams.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageUrl }),
+        }
+      );
 
       if (updateRes.ok) {
         // Atualizar estado local
@@ -193,7 +199,7 @@ export default function EditarProdutoPage({
 
   useEffect(() => {
     loadProduct();
-  }, [params.id]);
+  }, [resolvedParams.id]);
 
   if (loading) {
     return (

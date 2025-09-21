@@ -12,16 +12,27 @@ import type { UpdateProductDTO, ProductResponseDTO } from "@/types/dto";
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verificar se é admin
     await requireAdmin();
 
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
-    // Validar DTO
+    // Validar DTO - só validar se há dados para validar
+    if (!body || Object.keys(body).length === 0) {
+      return NextResponse.json(
+        createErrorResponse(
+          "Nenhum dado fornecido para atualização",
+          undefined,
+          "NO_DATA"
+        ),
+        { status: 400 }
+      );
+    }
+
     const validation = validateDTO(updateProductSchema, body);
     if (!validation.success) {
       return NextResponse.json(
@@ -96,13 +107,13 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verificar se é admin
     await requireAdmin();
 
-    const { id } = params;
+    const { id } = await params;
 
     // Verificar se produto existe
     const existingProduct = await prisma.product.findUnique({
