@@ -3,6 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { requireAdmin } from "@/lib/admin";
+import {
+  updateProductSchema,
+  validateDTO,
+  createErrorResponse,
+} from "@/lib/dto-validators";
+import type { UpdateProductDTO, ProductResponseDTO } from "@/types/dto";
 
 export async function PATCH(
   req: NextRequest,
@@ -15,45 +21,20 @@ export async function PATCH(
     const { id } = params;
     const body = await req.json();
 
-    // Validar campos permitidos
-    const allowedFields = [
-      "name",
-      "category",
-      "priceCents",
-      "stock",
-      "imageUrl",
-      "promoText",
-    ];
-    const updateData: Record<string, any> = {};
-
-    for (const [key, value] of Object.entries(body)) {
-      if (allowedFields.includes(key)) {
-        updateData[key] = value;
-      }
+    // Validar DTO
+    const validation = validateDTO(updateProductSchema, body);
+    if (!validation.success) {
+      return NextResponse.json(
+        createErrorResponse(
+          "Dados inválidos",
+          validation.errors,
+          "VALIDATION_ERROR"
+        ),
+        { status: 400 }
+      );
     }
 
-    // Validações específicas
-    if (updateData.stock !== undefined) {
-      const stock = Number(updateData.stock);
-      if (isNaN(stock) || stock < 0) {
-        return NextResponse.json(
-          { error: "Estoque deve ser um número não negativo" },
-          { status: 400 }
-        );
-      }
-      updateData.stock = Math.floor(stock);
-    }
-
-    if (updateData.priceCents !== undefined) {
-      const price = Number(updateData.priceCents);
-      if (isNaN(price) || price <= 0) {
-        return NextResponse.json(
-          { error: "Preço deve ser um número positivo" },
-          { status: 400 }
-        );
-      }
-      updateData.priceCents = Math.round(price);
-    }
+    const updateData: UpdateProductDTO = validation.data;
 
     // Verificar se produto existe
     const existingProduct = await prisma.product.findUnique({
@@ -62,7 +43,11 @@ export async function PATCH(
 
     if (!existingProduct) {
       return NextResponse.json(
-        { error: "Produto não encontrado" },
+        createErrorResponse(
+          "Produto não encontrado",
+          undefined,
+          "PRODUCT_NOT_FOUND"
+        ),
         { status: 404 }
       );
     }
@@ -73,16 +58,37 @@ export async function PATCH(
       data: updateData,
     });
 
-    return NextResponse.json(updatedProduct);
+    // Retornar DTO de resposta
+    const responseDTO: ProductResponseDTO = {
+      id: updatedProduct.id,
+      slug: updatedProduct.slug,
+      name: updatedProduct.name,
+      category: updatedProduct.category,
+      priceCents: updatedProduct.priceCents,
+      stock: updatedProduct.stock,
+      imageUrl: updatedProduct.imageUrl || undefined,
+      promoText: updatedProduct.promoText || undefined,
+      createdAt: updatedProduct.createdAt.toISOString(),
+      updatedAt: updatedProduct.updatedAt.toISOString(),
+    };
+
+    return NextResponse.json(responseDTO);
   } catch (error: unknown) {
     console.error("Erro ao atualizar produto:", error);
 
     if (error instanceof Error && error.message.includes("access_denied")) {
-      return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+      return NextResponse.json(
+        createErrorResponse("Acesso negado", undefined, "ACCESS_DENIED"),
+        { status: 403 }
+      );
     }
 
     return NextResponse.json(
-      { error: "Erro interno do servidor" },
+      createErrorResponse(
+        "Erro interno do servidor",
+        undefined,
+        "INTERNAL_ERROR"
+      ),
       { status: 500 }
     );
   }
