@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { getSecureImageUrl } from "@/lib/image-utils";
+import { ImageOff, TriangleAlert } from "lucide-react";
 
 type Product = {
   id: string;
@@ -76,7 +77,24 @@ export default function ProdutosPage() {
 
         alert(`Produto "${productName}" excluído com sucesso!`);
       } else {
-        const errorData = await res.json();
+        console.log("Response não OK, status:", res.status);
+        console.log("Response headers:", res.headers);
+
+        let errorData;
+        try {
+          const responseText = await res.text();
+          console.log("Response text:", responseText);
+
+          if (responseText) {
+            errorData = JSON.parse(responseText);
+          } else {
+            errorData = { error: "Resposta vazia do servidor" };
+          }
+        } catch (parseError) {
+          console.error("Erro ao fazer parse da resposta:", parseError);
+          errorData = { error: "Resposta inválida do servidor" };
+        }
+
         console.error("Erro na API:", errorData);
 
         if (errorData.code === "PRODUCT_HAS_ORDERS") {
@@ -85,8 +103,15 @@ export default function ProdutosPage() {
           );
         } else if (errorData.code === "ACCESS_DENIED") {
           alert("Você não tem permissão para excluir produtos.");
+        } else if (errorData.code === "PRODUCT_NOT_FOUND") {
+          alert(
+            `Produto "${productName}" não encontrado. Recarregando lista...`
+          );
+          await loadProducts();
         } else {
-          alert(errorData.error || "Erro ao excluir produto");
+          alert(
+            errorData.error || `Erro ao excluir produto (Status: ${res.status})`
+          );
         }
       }
     } catch (error) {
@@ -168,8 +193,8 @@ export default function ProdutosPage() {
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-white rounded-2xl border p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center text-white">
-              <PackageIcon size={20} />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-black">
+              <PackageIcon />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
@@ -180,8 +205,8 @@ export default function ProdutosPage() {
 
         <div className="bg-white rounded-2xl border p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white">
-              ⚠️
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-black">
+              <TriangleAlert />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">
@@ -194,8 +219,8 @@ export default function ProdutosPage() {
 
         <div className="bg-white rounded-2xl border p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-500 flex items-center justify-center text-white">
-              📷
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-black">
+              <ImageOff />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">
