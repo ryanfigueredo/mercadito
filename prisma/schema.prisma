@@ -22,6 +22,7 @@ model User {
   isAdmin   Boolean   @default(false) // Permissão para acessar área admin
   addresses Address[]
   orders    Order[]
+  cards     SavedCard[] // Cartões salvos
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -35,6 +36,20 @@ model Address {
   zip       String
   user      User     @relation(fields: [userId], references: [id])
   userId    String
+}
+
+model SavedCard {
+  id           String   @id @default(cuid())
+  lastFour     String   // Últimos 4 dígitos do cartão
+  brand        String   // Visa, Mastercard, etc.
+  holderName   String   // Nome do portador
+  expMonth     Int      // Mês de expiração
+  expYear      Int      // Ano de expiração
+  isDefault    Boolean  @default(false) // Cartão padrão
+  user         User     @relation(fields: [userId], references: [id])
+  userId       String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Product {
