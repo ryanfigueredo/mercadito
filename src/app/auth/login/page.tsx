@@ -11,7 +11,6 @@ import {
   EyeIcon,
   EyeOffIcon,
   AppleIcon,
-  FacebookIcon,
   GoogleIcon,
 } from "@/components/ui/icons";
 
@@ -184,26 +183,6 @@ export default function LoginPage() {
             >
               {loading ? "Entrando..." : "Entrar"}
             </Button>
-
-            {/* Separador */}
-            <div className="sep">
-              <div className="sep-line" />
-              <span className="sep-text">ou acessar com</span>
-              <div className="sep-line" />
-            </div>
-
-            {/* Sociais */}
-            <div className="flex justify-center gap-2">
-              <Button className="bg-[#F8B075] ">
-                <AppleIcon />
-              </Button>
-              <Button className="bg-[#F8B075] ">
-                <FacebookIcon />
-              </Button>
-              <Button className="bg-[#F8B075] ">
-                <GoogleIcon />
-              </Button>
-            </div>
           </form>
         </div>
 

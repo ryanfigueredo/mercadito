@@ -48,6 +48,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Usar CPF do banco de dados ou permitir cadastro no checkout
+    let documentToUse = user.document;
+
+    // Se não tem CPF cadastrado, permite cadastrar no checkout
+    if (!documentToUse) {
+      return NextResponse.json(
+        {
+          error: "CPF_REQUIRED",
+          message:
+            "CPF é obrigatório para pagamento PIX. Cadastre seu CPF para continuar.",
+        },
+        { status: 400 }
+      );
+    }
+
     // Preparar itens e calcular total
     let itemsTotalCents = 0;
     const pagarmeItems = items.map((item) => {
@@ -135,7 +150,7 @@ export async function POST(req: NextRequest) {
         name: user.name,
         email: user.email,
         type: "individual",
-        document: user.document,
+        document: documentToUse,
         phones: {
           mobile_phone: {
             country_code: "55",
@@ -162,22 +177,27 @@ export async function POST(req: NextRequest) {
 
     // Atualizar pedido com dados do Pagar.me
     const charge = pagarmeOrder.charges?.[0];
-    if (charge?.pix) {
+
+    // Logs removidos - PIX funcionando corretamente
+
+    // Os dados do PIX estão em last_transaction, não em pix
+    const pixData = charge?.last_transaction;
+    if (pixData?.qr_code) {
       await prisma.order.update({
         where: { id: order.id },
         data: {
           pagarmeOrderId: pagarmeOrder.id,
-          pagarmeChargeId: charge.id,
-          pixQrCode: charge.pix.qr_code,
-          pixQrCodeUrl: charge.pix.qr_code_url,
+          pagarmeChargeId: charge!.id,
+          pixQrCode: pixData.qr_code,
+          pixQrCodeUrl: pixData.qr_code_url,
         },
       });
     }
 
     return NextResponse.json({
       orderId: order.id,
-      pixQrCode: charge?.pix?.qr_code,
-      pixQrCodeUrl: charge?.pix?.qr_code_url,
+      pixQrCode: pixData?.qr_code || null,
+      pixQrCodeUrl: pixData?.qr_code_url || null,
       total: totalCents / 100,
       expiresIn: 3600,
     });

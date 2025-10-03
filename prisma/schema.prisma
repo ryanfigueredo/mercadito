@@ -17,7 +17,7 @@ model User {
   name      String
   email     String    @unique
   password  String
-  document  String?   // CPF/CNPJ para Pagar.me
+  document  String?   @unique // CPF/CNPJ para Pagar.me
   phone     String?   // Telefone para Pagar.me
   isAdmin   Boolean   @default(false) // Permissão para acessar área admin
   addresses Address[]

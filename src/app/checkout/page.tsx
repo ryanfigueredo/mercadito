@@ -6,9 +6,7 @@ import Topbar from "@/components/Topbar";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import PixPayment from "@/components/PixPayment";
-import CreditCardPayment from "@/components/CreditCardPayment";
-import DeliveryPayment from "@/components/DeliveryPayment";
+import PaymentModal from "@/components/PaymentModal";
 import AddressSelector, { type Address } from "@/components/AddressSelector";
 import { CreditCard, Truck } from "lucide-react";
 
@@ -38,16 +36,28 @@ export default function CheckoutPage() {
   const [userAddresses, setUserAddresses] = useState<Address[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const handlePaymentSuccess = () => {
     setPaymentSuccess(true);
     setPaymentError(null);
+    setShowPaymentModal(false);
     clear();
   };
 
   const handlePaymentError = (error: string) => {
     setPaymentError(error);
     setPaymentSuccess(false);
+  };
+
+  const handlePaymentMethodSelect = (method: "pix" | "credit" | "delivery") => {
+    setPaymentMethod(method);
+    setShowPaymentModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowPaymentModal(false);
+    setPaymentMethod(null);
   };
 
   const handleContinueToPayment = () => {
@@ -312,7 +322,7 @@ export default function CheckoutPage() {
               <div className="space-y-3">
                 <button
                   className="w-full p-4 rounded-2xl border-2 border-gray-200 bg-white hover:border-[#F8B075] hover:bg-orange-50 transition-all duration-200 flex items-center gap-4"
-                  onClick={() => setPaymentMethod("pix")}
+                  onClick={() => handlePaymentMethodSelect("pix")}
                 >
                   <div className="w-12 h-12 rounded-2xl bg-slate-200 flex items-center justify-center text-white text-xl">
                     <Image src="/pix.svg" alt="PIX" width={24} height={24} />
@@ -328,7 +338,7 @@ export default function CheckoutPage() {
 
                 <button
                   className="w-full p-4 rounded-2xl border-2 border-gray-200 bg-white hover:border-[#F8B075] hover:bg-orange-50 transition-all duration-200 flex items-center gap-4"
-                  onClick={() => setPaymentMethod("credit")}
+                  onClick={() => handlePaymentMethodSelect("credit")}
                 >
                   <div className="w-12 h-12 rounded-2xl bg-slate-200 flex items-center justify-center text-white text-xl">
                     <CreditCard width={24} height={24} className="text-black" />
@@ -346,7 +356,7 @@ export default function CheckoutPage() {
 
                 <button
                   className="w-full p-4 rounded-2xl border-2 border-gray-200 bg-white hover:border-[#F8B075] hover:bg-orange-50 transition-all duration-200 flex items-center gap-4"
-                  onClick={() => setPaymentMethod("delivery")}
+                  onClick={() => handlePaymentMethodSelect("delivery")}
                 >
                   <div className="w-12 h-12 rounded-2xl bg-slate-200 flex items-center justify-center text-white text-xl">
                     <Truck width={24} height={24} className="text-black" />
@@ -365,77 +375,21 @@ export default function CheckoutPage() {
             </div>
           )}
 
-        {/* Componentes de Pagamento */}
-        {paymentMethod === "pix" && selectedAddress && (
-          <div className="mt-6">
-            <div className="flex items-center gap-3 mb-6">
-              <button
-                onClick={() => setPaymentMethod(null)}
-                className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
-              >
-                ←
-              </button>
-              <h2 className="text-lg font-semibold">Pagamento PIX</h2>
-            </div>
-            <PixPayment
-              onSuccess={handlePaymentSuccess}
-              onError={handlePaymentError}
-              deliveryAddress={{
-                street: selectedAddress.street,
-                city: selectedAddress.city,
-                state: selectedAddress.state,
-                zip: selectedAddress.zip,
-              }}
-            />
-          </div>
-        )}
-
-        {paymentMethod === "credit" && selectedAddress && (
-          <div className="mt-6">
-            <div className="flex items-center gap-3 mb-6">
-              <button
-                onClick={() => setPaymentMethod(null)}
-                className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
-              >
-                ←
-              </button>
-              <h2 className="text-lg font-semibold">Cartão de Crédito</h2>
-            </div>
-            <CreditCardPayment
-              onSuccess={handlePaymentSuccess}
-              onError={handlePaymentError}
-              deliveryAddress={{
-                street: selectedAddress.street,
-                city: selectedAddress.city,
-                state: selectedAddress.state,
-                zip: selectedAddress.zip,
-              }}
-            />
-          </div>
-        )}
-
-        {paymentMethod === "delivery" && selectedAddress && (
-          <div className="mt-6">
-            <div className="flex items-center gap-3 mb-6">
-              <button
-                onClick={() => setPaymentMethod(null)}
-                className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
-              >
-                ←
-              </button>
-              <h2 className="text-lg font-semibold">Pagamento na Entrega</h2>
-            </div>
-            <DeliveryPayment
-              onSuccess={handlePaymentSuccess}
-              onError={handlePaymentError}
-              deliveryAddress={{
-                street: selectedAddress.street,
-                city: selectedAddress.city,
-                state: selectedAddress.state,
-                zip: selectedAddress.zip,
-              }}
-            />
-          </div>
+        {/* Modal de Pagamento */}
+        {selectedAddress && (
+          <PaymentModal
+            isOpen={showPaymentModal}
+            onClose={handleCloseModal}
+            paymentMethod={paymentMethod}
+            onSuccess={handlePaymentSuccess}
+            onError={handlePaymentError}
+            deliveryAddress={{
+              street: selectedAddress.street,
+              city: selectedAddress.city,
+              state: selectedAddress.state,
+              zip: selectedAddress.zip,
+            }}
+          />
         )}
 
         {/* Ações do carrinho */}

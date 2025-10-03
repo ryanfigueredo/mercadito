@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "../styles/globals.css";
+import "@/styles/globals.css";
 import BottomNav from "@/components/BottomNav";
 import CartFab from "@/components/CartFab";
 import AuthProvider from "@/components/AuthProvider";
@@ -12,7 +12,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Mercadito",
-  description: "Seu mercado digital",
+  description: "Mercado online com os melhores preços",
 };
 
 export default function RootLayout({

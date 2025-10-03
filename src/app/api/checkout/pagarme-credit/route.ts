@@ -143,6 +143,21 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Usar CPF do banco de dados ou permitir cadastro no checkout
+    let documentToUse = user.document;
+
+    // Se não tem CPF cadastrado, permite cadastrar no checkout
+    if (!documentToUse) {
+      return NextResponse.json(
+        {
+          error: "CPF_REQUIRED",
+          message:
+            "CPF é obrigatório para pagamento com cartão. Cadastre seu CPF para continuar.",
+        },
+        { status: 400 }
+      );
+    }
+
     // Preparar dados do cliente para Pagar.me
     const phone = user.phone.replace(/\D/g, ""); // remover caracteres não numéricos
     const areaCode = phone.substring(0, 2);
@@ -156,7 +171,7 @@ export async function POST(req: NextRequest) {
         name: user.name,
         email: user.email,
         type: "individual",
-        document: user.document,
+        document: documentToUse,
         phones: {
           mobile_phone: {
             country_code: "55",

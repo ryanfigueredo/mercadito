@@ -306,41 +306,6 @@ export default function RegisterPage() {
             <Button className="w-full" type="submit" disabled={loading}>
               {loading ? "Criando conta..." : "Criar conta"}
             </Button>
-
-            {/* Separador */}
-            <div className="sep">
-              <div className="sep-line" />
-              <span className="sep-text">ou acessar com</span>
-              <div className="sep-line" />
-            </div>
-
-            {/* Sociais */}
-            <div className="flex justify-center gap-3">
-              <Button
-                type="button"
-                variant="accent"
-                size="icon"
-                aria-label="Apple"
-              >
-                <AppleIcon />
-              </Button>
-              <Button
-                type="button"
-                variant="accent"
-                size="icon"
-                aria-label="Facebook"
-              >
-                <FacebookIcon />
-              </Button>
-              <Button
-                type="button"
-                variant="accent"
-                size="icon"
-                aria-label="Google"
-              >
-                <GoogleIcon />
-              </Button>
-            </div>
           </form>
         </div>
 

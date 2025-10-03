@@ -71,6 +71,13 @@ export interface PagarMeResponse {
     last_transaction?: {
       id: string;
       status: string;
+      qr_code?: string;
+      qr_code_url?: string;
+      expires_at?: string;
+      additional_information?: Array<{
+        name: string;
+        value: string;
+      }>;
     };
   }>;
 }
