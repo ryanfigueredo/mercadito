@@ -83,8 +83,17 @@ export async function POST(req: NextRequest) {
       };
     });
 
-    const freightCents = 2000; // R$20,00 frete fixo
+    const freightCents = 0; // R$0,00 frete zerado para testes
     const totalCents = itemsTotalCents + freightCents;
+
+    // Adicionar frete como item separado no Pagar.me (apenas se > 0)
+    if (freightCents > 0) {
+      pagarmeItems.push({
+        amount: freightCents,
+        description: "Frete",
+        quantity: 1,
+      });
+    }
 
     // Buscar produtos no banco usando os slugs do carrinho
     const productSlugs = items.map((item) => item.id);

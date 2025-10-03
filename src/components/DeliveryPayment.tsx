@@ -41,7 +41,7 @@ export default function DeliveryPayment({
           unitPriceCents: Math.round(item.price * 100),
         })),
         totalCents: Math.round(total * 100),
-        shippingCents: 2000, // R$ 20,00
+        shippingCents: 2000,
         paymentMethod: "delivery",
         deliveryAddress: deliveryAddress.street,
         deliveryCity: deliveryAddress.city,

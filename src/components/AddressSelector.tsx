@@ -1,278 +1,234 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MapPinIcon, PlusIcon, CheckIcon } from "@/components/ui/icons";
+import { CheckIcon, PlusIcon } from "@/components/ui/icons";
 
-export type Address = {
+interface Address {
   id: string;
-  label: string;
   street: string;
   city: string;
   state: string;
   zip: string;
-};
+  isDefault?: boolean;
+}
 
 interface AddressSelectorProps {
-  userAddresses: Address[];
-  selectedAddress: Address | null;
   onAddressSelect: (address: Address) => void;
-  onAddressCreate: (address: Omit<Address, "id">) => Promise<void>;
+  onAddressChange: () => void;
+  selectedAddress?: Address | null;
 }
 
 export default function AddressSelector({
-  userAddresses,
-  selectedAddress,
   onAddressSelect,
-  onAddressCreate,
+  onAddressChange,
+  selectedAddress,
 }: AddressSelectorProps) {
-  const [showNewAddressForm, setShowNewAddressForm] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
   const [newAddress, setNewAddress] = useState({
-    label: "Casa",
     street: "",
     city: "",
     state: "",
     zip: "",
   });
 
-  // Auto-select first address if none selected
   useEffect(() => {
-    if (!selectedAddress && userAddresses.length > 0) {
-      onAddressSelect(userAddresses[0]);
-    }
-  }, [userAddresses, selectedAddress, onAddressSelect]);
+    fetchAddresses();
+  }, []);
 
-  const handleCreateAddress = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (
-      !newAddress.street ||
-      !newAddress.city ||
-      !newAddress.state ||
-      !newAddress.zip
-    ) {
-      return;
-    }
-
-    setLoading(true);
+  const fetchAddresses = async () => {
     try {
-      await onAddressCreate(newAddress);
-      setNewAddress({
-        label: "Casa",
-        street: "",
-        city: "",
-        state: "",
-        zip: "",
-      });
-      setShowNewAddressForm(false);
+      const response = await fetch("/api/user/addresses");
+      if (response.ok) {
+        const data = await response.json();
+        setAddresses(data);
+
+        // Selecionar o endereço padrão automaticamente
+        const defaultAddress = data.find((addr: Address) => addr.isDefault);
+        if (defaultAddress) {
+          onAddressSelect(defaultAddress);
+        }
+      }
     } catch (error) {
-      console.error("Erro ao criar endereço:", error);
+      console.error("Erro ao buscar endereços:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  if (userAddresses.length === 0 && !showNewAddressForm) {
-    return (
-      <div className="bg-white rounded-2xl border p-4">
-        <div className="flex items-center gap-3 mb-4">
-          <MapPinIcon size={20} className="text-[#F8B075]" />
-          <h3 className="font-semibold text-gray-900">Endereço de Entrega</h3>
-        </div>
+  const handleAddAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-        <div className="text-center py-6">
-          <MapPinIcon size={48} className="mx-auto text-gray-300 mb-3" />
-          <p className="text-gray-600 mb-4">
-            Você ainda não tem endereços cadastrados
-          </p>
-          <Button
-            onClick={() => setShowNewAddressForm(true)}
-            className="bg-[#F8B075] hover:bg-[#e69a66]"
-          >
-            <PlusIcon size={16} className="mr-2" />
-            Adicionar Endereço
-          </Button>
-        </div>
+    try {
+      const response = await fetch("/api/user/addresses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newAddress),
+      });
+
+      if (response.ok) {
+        const addedAddress = await response.json();
+        setAddresses([...addresses, addedAddress]);
+        onAddressSelect(addedAddress);
+        setNewAddress({ street: "", city: "", state: "", zip: "" });
+        setShowAddForm(false);
+      }
+    } catch (error) {
+      console.error("Erro ao adicionar endereço:", error);
+    }
+  };
+
+  const formatZip = (zip: string) => {
+    return zip.replace(/\D/g, "").replace(/(\d{5})(\d{3})/, "$1-$2");
+  };
+
+  if (loading) {
+    return (
+      <div className="p-4 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F8B075] mx-auto"></div>
+        <p className="mt-2 text-gray-600">Carregando endereços...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl border p-4">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <MapPinIcon size={20} className="text-[#F8B075]" />
-          <h3 className="font-semibold text-gray-900">Endereço de Entrega</h3>
-        </div>
-        {userAddresses.length > 0 && !showNewAddressForm && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowNewAddressForm(true)}
-          >
-            <PlusIcon size={14} className="mr-1" />
-            Novo
-          </Button>
-        )}
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-gray-900">
+          Endereço de Cobrança
+        </h3>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onAddressChange}
+          className="text-[#F8B075] border-[#F8B075] hover:bg-[#F8B075] hover:text-white"
+        >
+          Alterar
+        </Button>
       </div>
 
-      {/* Lista de endereços existentes */}
-      {!showNewAddressForm && userAddresses.length > 0 && (
+      {addresses.length > 0 && !showAddForm && (
         <div className="space-y-2">
-          {userAddresses.map((address) => (
-            <button
+          {addresses.map((address) => (
+            <div
               key={address.id}
-              onClick={() => onAddressSelect(address)}
-              className={`w-full p-3 rounded-xl border-2 text-left transition-all ${
+              className={`p-3 border rounded-lg cursor-pointer transition-colors ${
                 selectedAddress?.id === address.id
                   ? "border-[#F8B075] bg-orange-50"
                   : "border-gray-200 hover:border-gray-300"
               }`}
+              onClick={() => onAddressSelect(address)}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-gray-900">
-                      {address.label}
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="font-medium text-gray-900">{address.street}</p>
+                  <p className="text-sm text-gray-600">
+                    {address.city}, {address.state} - {formatZip(address.zip)}
+                  </p>
+                  {address.isDefault && (
+                    <span className="inline-block mt-1 px-2 py-1 text-xs bg-[#F8B075] text-white rounded">
+                      Padrão
                     </span>
-                    {selectedAddress?.id === address.id && (
-                      <CheckIcon size={16} className="text-[#F8B075]" />
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-600 truncate">
-                    {address.street}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {address.city} - {address.state}, {address.zip}
-                  </p>
+                  )}
                 </div>
+                {selectedAddress?.id === address.id && (
+                  <CheckIcon className="w-5 h-5 text-[#F8B075]" />
+                )}
               </div>
-            </button>
+            </div>
           ))}
         </div>
       )}
 
-      {/* Formulário para novo endereço */}
-      {showNewAddressForm && (
-        <form onSubmit={handleCreateAddress} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+      {!showAddForm && (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setShowAddForm(true)}
+          className="w-full border-dashed border-gray-300 text-gray-600 hover:border-[#F8B075] hover:text-[#F8B075]"
+        >
+          <PlusIcon className="w-4 h-4 mr-2" />
+          Adicionar Novo Endereço
+        </Button>
+      )}
+
+      {showAddForm && (
+        <form
+          onSubmit={handleAddAddress}
+          className="space-y-4 p-4 border rounded-lg bg-gray-50"
+        >
+          <h4 className="font-medium text-gray-900">Novo Endereço</h4>
+
+          <div>
+            <Label htmlFor="street">Endereço</Label>
+            <Input
+              id="street"
+              value={newAddress.street}
+              onChange={(e) =>
+                setNewAddress({ ...newAddress, street: e.target.value })
+              }
+              placeholder="Rua, número, complemento"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="label" className="text-sm font-medium">
-                Identificação
-              </Label>
-              <select
-                id="label"
-                value={newAddress.label}
+              <Label htmlFor="city">Cidade</Label>
+              <Input
+                id="city"
+                value={newAddress.city}
                 onChange={(e) =>
-                  setNewAddress({ ...newAddress, label: e.target.value })
+                  setNewAddress({ ...newAddress, city: e.target.value })
                 }
-                className="w-full mt-1 p-2 border rounded-lg text-sm"
+                placeholder="São Paulo"
                 required
-              >
-                <option value="Casa">Casa</option>
-                <option value="Trabalho">Trabalho</option>
-                <option value="Outros">Outros</option>
-              </select>
+              />
             </div>
             <div>
-              <Label htmlFor="zip" className="text-sm font-medium">
-                CEP
-              </Label>
+              <Label htmlFor="state">Estado</Label>
               <Input
-                id="zip"
-                type="text"
-                placeholder="00000-000"
-                value={newAddress.zip}
+                id="state"
+                value={newAddress.state}
                 onChange={(e) =>
-                  setNewAddress({ ...newAddress, zip: e.target.value })
+                  setNewAddress({ ...newAddress, state: e.target.value })
                 }
-                className="mt-1"
+                placeholder="SP"
+                maxLength={2}
                 required
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="street" className="text-sm font-medium">
-              Endereço completo
-            </Label>
+            <Label htmlFor="zip">CEP</Label>
             <Input
-              id="street"
-              type="text"
-              placeholder="Rua, número, complemento"
-              value={newAddress.street}
+              id="zip"
+              value={newAddress.zip}
               onChange={(e) =>
-                setNewAddress({ ...newAddress, street: e.target.value })
+                setNewAddress({ ...newAddress, zip: formatZip(e.target.value) })
               }
-              className="mt-1"
+              placeholder="00000-000"
+              maxLength={9}
               required
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="city" className="text-sm font-medium">
-                Cidade
-              </Label>
-              <Input
-                id="city"
-                type="text"
-                placeholder="Cidade"
-                value={newAddress.city}
-                onChange={(e) =>
-                  setNewAddress({ ...newAddress, city: e.target.value })
-                }
-                className="mt-1"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="state" className="text-sm font-medium">
-                Estado
-              </Label>
-              <Input
-                id="state"
-                type="text"
-                placeholder="UF"
-                maxLength={2}
-                value={newAddress.state}
-                onChange={(e) =>
-                  setNewAddress({
-                    ...newAddress,
-                    state: e.target.value.toUpperCase(),
-                  })
-                }
-                className="mt-1"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-2 pt-2">
+          <div className="flex gap-2">
+            <Button type="submit" className="flex-1">
+              Salvar Endereço
+            </Button>
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                setShowNewAddressForm(false);
-                setNewAddress({
-                  label: "Casa",
-                  street: "",
-                  city: "",
-                  state: "",
-                  zip: "",
-                });
-              }}
-              className="flex-1"
+              onClick={() => setShowAddForm(false)}
             >
               Cancelar
-            </Button>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="flex-1 bg-[#F8B075] hover:bg-[#e69a66]"
-            >
-              {loading ? "Salvando..." : "Salvar"}
             </Button>
           </div>
         </form>

@@ -6,14 +6,14 @@ import { authOptions } from "@/lib/auth";
 // Função para validar CPF real
 function isValidCPF(cpf: string): boolean {
   // Remove caracteres não numéricos
-  cpf = cpf.replace(/\D/g, '');
-  
+  cpf = cpf.replace(/\D/g, "");
+
   // Verifica se tem 11 dígitos
   if (cpf.length !== 11) return false;
-  
+
   // Verifica se todos os dígitos são iguais
   if (/^(\d)\1{10}$/.test(cpf)) return false;
-  
+
   // Validação do primeiro dígito verificador
   let sum = 0;
   for (let i = 0; i < 9; i++) {
@@ -22,7 +22,7 @@ function isValidCPF(cpf: string): boolean {
   let remainder = (sum * 10) % 11;
   if (remainder === 10 || remainder === 11) remainder = 0;
   if (remainder !== parseInt(cpf.charAt(9))) return false;
-  
+
   // Validação do segundo dígito verificador
   sum = 0;
   for (let i = 0; i < 10; i++) {
@@ -31,7 +31,7 @@ function isValidCPF(cpf: string): boolean {
   remainder = (sum * 10) % 11;
   if (remainder === 10 || remainder === 11) remainder = 0;
   if (remainder !== parseInt(cpf.charAt(10))) return false;
-  
+
   return true;
 }
 
@@ -96,37 +96,35 @@ export async function PUT(req: NextRequest) {
         );
       }
 
-      // Verificar se CPF já existe para outro usuário
-      const existingUser = await prisma.user.findFirst({
-        where: {
-          document: cleanDocument,
-          email: { not: session.user.email }
+      try {
+        const user = await prisma.user.update({
+          where: { email: session.user.email },
+          data: {
+            document: cleanDocument,
+          },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            document: true,
+            isAdmin: true,
+          },
+        });
+
+        return NextResponse.json(user);
+      } catch (error: any) {
+        if (
+          error.code === "P2002" &&
+          error.meta?.target?.includes("document")
+        ) {
+          return NextResponse.json(
+            { error: "Este CPF já está cadastrado para outra conta." },
+            { status: 400 }
+          );
         }
-      });
-
-      if (existingUser) {
-        return NextResponse.json(
-          { error: "Este CPF já está cadastrado para outra conta." },
-          { status: 400 }
-        );
+        throw error;
       }
-
-      const user = await prisma.user.update({
-        where: { email: session.user.email },
-        data: {
-          document: cleanDocument,
-        },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
-          document: true,
-          isAdmin: true,
-        },
-      });
-
-      return NextResponse.json(user);
     }
 
     // Validar dados obrigatórios para atualização completa
@@ -158,8 +156,8 @@ export async function PUT(req: NextRequest) {
     const existingUser = await prisma.user.findFirst({
       where: {
         document: cleanDocument,
-        email: { not: session.user.email }
-      }
+        email: { not: session.user.email },
+      },
     });
 
     if (existingUser) {
@@ -189,25 +187,35 @@ export async function PUT(req: NextRequest) {
     // Limita a 13 dígitos
     finalPhone = finalPhone.substring(0, 13);
 
-    const user = await prisma.user.update({
-      where: { email: session.user.email },
-      data: {
-        name,
-        phone: finalPhone,
-        email,
-        document: cleanDocument,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        document: true,
-        isAdmin: true,
-      },
-    });
+    try {
+      const user = await prisma.user.update({
+        where: { email: session.user.email },
+        data: {
+          name,
+          phone: finalPhone,
+          email,
+          document: cleanDocument,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          document: true,
+          isAdmin: true,
+        },
+      });
 
-    return NextResponse.json(user);
+      return NextResponse.json(user);
+    } catch (error: any) {
+      if (error.code === "P2002" && error.meta?.target?.includes("document")) {
+        return NextResponse.json(
+          { error: "Este CPF já está cadastrado para outra conta." },
+          { status: 400 }
+        );
+      }
+      throw error;
+    }
   } catch (error) {
     console.error("Erro ao atualizar perfil do usuário:", error);
     return NextResponse.json(

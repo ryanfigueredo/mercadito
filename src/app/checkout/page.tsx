@@ -262,12 +262,12 @@ export default function CheckoutPage() {
             </div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-gray-600">Frete</span>
-              <span className="font-medium">R$ 20,00</span>
+              <span className="font-medium">R$ 0,00</span>
             </div>
             <div className="border-t pt-2 flex items-center justify-between">
               <span className="text-lg font-semibold text-gray-900">Total</span>
               <span className="text-lg font-bold text-[#F8B075]">
-                R$ {(total + 20).toFixed(2)}
+                R$ {total.toFixed(2)}
               </span>
             </div>
           </div>
