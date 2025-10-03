@@ -1,6 +1,5 @@
 import Topbar from "@/components/Topbar";
 import Link from "next/link";
-import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -8,8 +7,6 @@ import {
   PencilIcon,
   CreditCardIcon,
   MapPinIcon,
-  SettingsIcon,
-  ShieldIcon,
   FileTextIcon,
   HelpCircleIcon,
   LogOutIcon,
@@ -86,19 +83,10 @@ export default async function PerfilPage() {
         {dbUser && (
           <>
             <section className="relative overflow-hidden rounded-2xl bg-black-50">
-              <div className="p-4 flex items-center gap-3">
-                <div className="h-16 w-16 rounded-full overflow-hidden bg-gray-200">
-                  <Image
-                    src="/next.svg"
-                    alt="avatar"
-                    width={64}
-                    height={64}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
+              <div className="p-4">
                 <div className="min-w-0">
-                  <p className="font-semibold truncate">{dbUser.name}</p>
-                  <p className="text-sm text-muted truncate">{dbUser.email}</p>
+                  <p className="font-semibold text-lg">{dbUser.name}</p>
+                  <p className="text-sm text-muted">{dbUser.email}</p>
                 </div>
               </div>
             </section>
@@ -126,16 +114,6 @@ export default async function PerfilPage() {
                 href="/perfil/enderecos"
                 Icon={MapPinIcon}
                 label="Endereços"
-              />
-              <MenuItem
-                href="/perfil/configuracoes"
-                Icon={SettingsIcon}
-                label="Configurações"
-              />
-              <MenuItem
-                href="/perfil/privacidade"
-                Icon={ShieldIcon}
-                label="Privacidade"
               />
               <MenuItem
                 href="/perfil/termos"
