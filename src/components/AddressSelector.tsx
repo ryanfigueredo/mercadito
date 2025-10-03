@@ -158,80 +158,85 @@ export default function AddressSelector({
       )}
 
       {showAddForm && (
-        <form
-          onSubmit={handleAddAddress}
-          className="space-y-4 p-4 border rounded-lg bg-gray-50"
-        >
-          <h4 className="font-medium text-gray-900">Novo Endereço</h4>
+        <div className="max-h-64 overflow-y-auto">
+          <form
+            onSubmit={handleAddAddress}
+            className="space-y-4 p-4 border rounded-lg bg-gray-50"
+          >
+            <h4 className="font-medium text-gray-900">Novo Endereço</h4>
 
-          <div>
-            <Label htmlFor="street">Endereço</Label>
-            <Input
-              id="street"
-              value={newAddress.street}
-              onChange={(e) =>
-                setNewAddress({ ...newAddress, street: e.target.value })
-              }
-              placeholder="Rua, número, complemento"
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="city">Cidade</Label>
+              <Label htmlFor="street">Endereço</Label>
               <Input
-                id="city"
-                value={newAddress.city}
+                id="street"
+                value={newAddress.street}
                 onChange={(e) =>
-                  setNewAddress({ ...newAddress, city: e.target.value })
+                  setNewAddress({ ...newAddress, street: e.target.value })
                 }
-                placeholder="São Paulo"
+                placeholder="Rua, número, complemento"
                 required
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="city">Cidade</Label>
+                <Input
+                  id="city"
+                  value={newAddress.city}
+                  onChange={(e) =>
+                    setNewAddress({ ...newAddress, city: e.target.value })
+                  }
+                  placeholder="São Paulo"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="state">Estado</Label>
+                <Input
+                  id="state"
+                  value={newAddress.state}
+                  onChange={(e) =>
+                    setNewAddress({ ...newAddress, state: e.target.value })
+                  }
+                  placeholder="SP"
+                  maxLength={2}
+                  required
+                />
+              </div>
+            </div>
+
             <div>
-              <Label htmlFor="state">Estado</Label>
+              <Label htmlFor="zip">CEP</Label>
               <Input
-                id="state"
-                value={newAddress.state}
+                id="zip"
+                value={newAddress.zip}
                 onChange={(e) =>
-                  setNewAddress({ ...newAddress, state: e.target.value })
+                  setNewAddress({
+                    ...newAddress,
+                    zip: formatZip(e.target.value),
+                  })
                 }
-                placeholder="SP"
-                maxLength={2}
+                placeholder="00000-000"
+                maxLength={9}
                 required
               />
             </div>
-          </div>
 
-          <div>
-            <Label htmlFor="zip">CEP</Label>
-            <Input
-              id="zip"
-              value={newAddress.zip}
-              onChange={(e) =>
-                setNewAddress({ ...newAddress, zip: formatZip(e.target.value) })
-              }
-              placeholder="00000-000"
-              maxLength={9}
-              required
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <Button type="submit" className="flex-1">
-              Salvar Endereço
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowAddForm(false)}
-            >
-              Cancelar
-            </Button>
-          </div>
-        </form>
+            <div className="flex gap-2">
+              <Button type="submit" className="flex-1">
+                Salvar Endereço
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowAddForm(false)}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </form>
+        </div>
       )}
     </div>
   );

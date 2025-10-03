@@ -42,6 +42,7 @@ export default function CreditCardPayment({
   const [paymentProcessed, setPaymentProcessed] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
   const [showAddressSelector, setShowAddressSelector] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const [installmentOptions, setInstallmentOptions] = useState<
     Array<{ installments: number; amount: number; hasInterest: boolean }>
   >([]);
@@ -92,6 +93,7 @@ export default function CreditCardPayment({
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setLoading(true);
+    setPaymentError(null);
     onProcessingChange?.(true);
 
     try {
@@ -129,13 +131,41 @@ export default function CreditCardPayment({
         throw new Error(data.error || "Erro ao processar pagamento");
       }
 
-      // Se chegou até aqui, o pagamento foi processado com sucesso
-      setPaymentProcessed(true);
-      onSuccess(data);
+      // Verificar status do Pagar.me
+      const charge = data.charges?.[0];
+      if (charge) {
+        if (charge.status === "paid" || charge.status === "approved") {
+          // Pagamento aprovado - prosseguir
+          setPaymentProcessed(true);
+          onSuccess(data);
+        } else if (
+          charge.status === "failed" ||
+          charge.status === "denied" ||
+          charge.status === "refused"
+        ) {
+          // Pagamento negado - mostrar erro
+          const errorMessage =
+            "Cartão não foi aceito. Verifique os dados ou tente outro cartão.";
+          setPaymentError(errorMessage);
+          onError(errorMessage);
+        } else {
+          // Status pendente ou outro
+          const errorMessage =
+            "Pagamento em processamento. Aguarde a confirmação.";
+          setPaymentError(errorMessage);
+          onError(errorMessage);
+        }
+      } else {
+        // Sem dados de cobrança
+        const errorMessage = "Erro ao processar pagamento. Tente novamente.";
+        setPaymentError(errorMessage);
+        onError(errorMessage);
+      }
     } catch (error: unknown) {
-      onError(
-        error instanceof Error ? error.message : "Erro ao processar pagamento"
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : "Erro ao processar pagamento";
+      setPaymentError(errorMessage);
+      onError(errorMessage);
     } finally {
       setLoading(false);
       onProcessingChange?.(false);
@@ -174,6 +204,30 @@ export default function CreditCardPayment({
       .substring(0, 19);
   };
 
+  const formatExpirationDate = (value: string) => {
+    const cleaned = value.replace(/\D/g, ""); // Remove caracteres não numéricos
+    let formatted = "";
+    if (cleaned.length > 0) {
+      formatted = cleaned.substring(0, 2); // Mês
+      if (cleaned.length > 2) {
+        formatted += "/" + cleaned.substring(2, 4); // Ano
+      }
+    }
+    return formatted;
+  };
+
+  const handleExpirationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedValue = formatExpirationDate(e.target.value);
+    setCardData((prev) => {
+      const [month, year] = formattedValue.split("/");
+      return {
+        ...prev,
+        expMonth: month || "",
+        expYear: year || "",
+      };
+    });
+  };
+
   if (paymentProcessed) {
     return (
       <div className="space-y-4">
@@ -188,9 +242,8 @@ export default function CreditCardPayment({
   }
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1 h-full">
       <div className="text-center">
-        <h3 className="text-lg font-semibold mb-1">Cartão de Crédito</h3>
         <p className="text-sm text-muted-foreground">
           {loading
             ? "Processando pagamento..."
@@ -201,6 +254,30 @@ export default function CreditCardPayment({
       {loading && (
         <div className="flex justify-center">
           <div className="animate-spin w-6 h-6 border-2 border-[#F8B075] border-t-transparent rounded-full"></div>
+        </div>
+      )}
+
+      {/* Mensagem de erro do pagamento */}
+      {paymentError && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center space-x-2">
+            <div className="flex-shrink-0">
+              <svg
+                className="w-5 h-5 text-red-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-red-800">{paymentError}</p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -240,38 +317,18 @@ export default function CreditCardPayment({
           />
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label htmlFor="expMonth">Mês</Label>
+            <Label htmlFor="expirationDate">Validade Mes/Ano (MM/AA)</Label>
             <Input
-              id="expMonth"
+              id="expirationDate"
               type="text"
-              placeholder="MM"
-              value={cardData.expMonth}
-              onChange={(e) =>
-                setCardData({
-                  ...cardData,
-                  expMonth: e.target.value.replace(/\D/g, "").substring(0, 2),
-                })
-              }
-              maxLength={2}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="expYear">Ano</Label>
-            <Input
-              id="expYear"
-              type="text"
-              placeholder="AAAA"
-              value={cardData.expYear}
-              onChange={(e) =>
-                setCardData({
-                  ...cardData,
-                  expYear: e.target.value.replace(/\D/g, "").substring(0, 4),
-                })
-              }
-              maxLength={4}
+              placeholder="MM/AA"
+              value={formatExpirationDate(
+                `${cardData.expMonth}${cardData.expYear}`
+              )}
+              onChange={handleExpirationChange}
+              maxLength={5}
               required
             />
           </div>
@@ -324,22 +381,6 @@ export default function CreditCardPayment({
         />
 
         {/* Informações sobre parcelamento */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
-          <h4 className="font-medium text-blue-900 mb-2">
-            💳 Condições de Parcelamento
-          </h4>
-          <div className="space-y-1 text-blue-800">
-            <p>
-              • <strong>1x a 3x:</strong> Sem juros
-            </p>
-            <p>
-              • <strong>4x a 6x:</strong> Juros de 2% ao mês
-            </p>
-            <p>
-              • <strong>7x a 12x:</strong> Juros de 4% ao mês
-            </p>
-          </div>
-        </div>
       </form>
     </div>
   );

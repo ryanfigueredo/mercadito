@@ -98,7 +98,7 @@ export default function PaymentModal({
 
       {/* Modal */}
       <div
-        className={`relative w-full max-w-md bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 ${
+        className={`relative w-full max-w-md bg-white rounded-t-3xl shadow-2xl transform transition-transform duration-300 flex flex-col ${
           isOpen ? "translate-y-0" : "translate-y-full"
         }`}
         style={{ maxHeight: "90vh" }}
@@ -116,11 +116,8 @@ export default function PaymentModal({
           </Button>
         </div>
 
-        {/* Content */}
-        <div
-          className="flex-1 overflow-y-auto p-4"
-          style={{ maxHeight: "calc(90vh - 140px)" }}
-        >
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-4 min-h-0">
           {showCpfRegistration ? (
             <CpfRegistration
               onCpfRegistered={handleCpfRegistered}
@@ -176,11 +173,9 @@ export default function PaymentModal({
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-green-800">
-                  🔒 Site Seguro - Dados Protegidos
+                  Seus dados estão protegidos
                 </p>
-                <p className="text-xs text-green-700">
-                  Seus dados estão protegidos pela LGPD e criptografia SSL
-                </p>
+                <p className="text-xs text-green-700">por criptografia SSL</p>
               </div>
             </div>
           </div>
