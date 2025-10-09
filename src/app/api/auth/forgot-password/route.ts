@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
                       <!-- Header -->
                       <tr>
                         <td style="background: linear-gradient(135deg, #F8B075 0%, #e69a66 100%); padding: 40px; text-align: center;">
-                          <h1 style="margin: 0; color: white; font-size: 28px; font-weight: bold;">🔐 Redefinir Senha</h1>
+                          <h1 style="margin: 0; color: white; font-size: 28px; font-weight: bold;">Redefinir Senha</h1>
                         </td>
                       </tr>
                       
