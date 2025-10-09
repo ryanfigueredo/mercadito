@@ -171,7 +171,10 @@ export default function LoginPage() {
                 />
                 Manter conectado
               </label>
-              <Link href="#" className="text-sm underline">
+              <Link
+                href="/auth/forgot-password"
+                className="text-sm underline hover:text-[#F8B075]"
+              >
                 Esqueci minha senha
               </Link>
             </div>
