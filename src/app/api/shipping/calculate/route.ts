@@ -60,27 +60,47 @@ async function getCoordinatesFromCEP(
   cep: string
 ): Promise<{ lat: number; lng: number } | null> {
   try {
+    console.log(`🔍 Buscando coordenadas para CEP: ${cep}`);
+
     // Primeiro, obter dados do CEP via ViaCEP
     const viaCEPResponse = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
     if (!viaCEPResponse.ok) {
+      console.error(
+        `❌ ViaCEP error: ${viaCEPResponse.status} ${viaCEPResponse.statusText}`
+      );
       throw new Error("Erro ao consultar CEP");
     }
 
     const cepData: ViaCEPResponse = await viaCEPResponse.json();
     if (cepData.erro) {
+      console.error(`❌ CEP não encontrado: ${cep}`);
       throw new Error("CEP não encontrado");
     }
 
+    console.log(`✅ ViaCEP data:`, cepData);
+
     // Usar OpenStreetMap Nominatim para geocoding (gratuito)
     const address = `${cepData.logradouro}, ${cepData.bairro}, ${cepData.localidade}, ${cepData.uf}`;
+    console.log(`🗺️ Buscando coordenadas para: ${address}`);
+
     const nominatimResponse = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
         address
-      )}&limit=1&countrycodes=br`
+      )}&limit=1&countrycodes=br`,
+      {
+        headers: {
+          "User-Agent": "MercaditoApp/1.0 (contato@mercadito.com.br)",
+        },
+      }
     );
 
     if (!nominatimResponse.ok) {
-      throw new Error("Erro ao obter coordenadas");
+      console.error(
+        `❌ Nominatim response error: ${nominatimResponse.status} ${nominatimResponse.statusText}`
+      );
+      throw new Error(
+        `Erro ao consultar coordenadas: ${nominatimResponse.status}`
+      );
     }
 
     const nominatimData = await nominatimResponse.json();
@@ -90,22 +110,38 @@ async function getCoordinatesFromCEP(
       const genericResponse = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
           genericAddress
-        )}&limit=1&countrycodes=br`
+        )}&limit=1&countrycodes=br`,
+        {
+          headers: {
+            "User-Agent": "MercaditoApp/1.0 (contato@mercadito.com.br)",
+          },
+        }
       );
 
       if (genericResponse.ok) {
         const genericData = await genericResponse.json();
         if (genericData.length > 0) {
+          console.log(
+            `✅ Coordenadas encontradas para cidade: ${genericAddress}`
+          );
           return {
             lat: parseFloat(genericData[0].lat),
             lng: parseFloat(genericData[0].lon),
           };
         }
+      } else {
+        console.error(
+          `❌ Generic search error: ${genericResponse.status} ${genericResponse.statusText}`
+        );
       }
 
+      console.error(`❌ Nenhuma coordenada encontrada para: ${address}`);
       throw new Error("Endereço não encontrado no sistema de coordenadas");
     }
 
+    console.log(
+      `✅ Coordenadas encontradas: ${nominatimData[0].lat}, ${nominatimData[0].lon}`
+    );
     return {
       lat: parseFloat(nominatimData[0].lat),
       lng: parseFloat(nominatimData[0].lon),
