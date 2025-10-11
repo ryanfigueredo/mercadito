@@ -222,6 +222,10 @@ export async function POST(req: NextRequest) {
                   }
                 : undefined,
             },
+            // Adicionar configuração de antifraude para ambiente de teste
+            antifraud: {
+              enabled: false, // Desabilitar antifraude em teste
+            },
           },
         },
       ],
@@ -248,6 +252,25 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Verificar se o pagamento falhou
+    if (charge?.status === "failed") {
+      const lastTransaction = charge.last_transaction;
+      const errorMessage =
+        lastTransaction?.gateway_response?.errors?.[0]?.message ||
+        "Pagamento recusado";
+
+      console.error("❌ Pagamento falhou:", errorMessage);
+
+      return NextResponse.json(
+        {
+          error: "PAYMENT_FAILED",
+          message: errorMessage,
+          details: lastTransaction?.gateway_response?.errors,
+        },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json({
       orderId: order.id,
       status: charge?.status,
@@ -256,14 +279,29 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: unknown) {
     console.error("Erro ao processar pagamento com cartão:", error);
+
+    // Capturar erros específicos do Pagar.me
+    let errorMessage = "Erro ao processar pagamento";
+    let statusCode = 500;
+
+    if (error instanceof Error) {
+      if (error.message.includes("Authorization has been denied")) {
+        errorMessage = "Chave de API inválida";
+        statusCode = 401;
+      } else if (error.message.includes("Sem ambiente configurado")) {
+        errorMessage = "Conta não configurada para transações de cartão";
+        statusCode = 400;
+      } else {
+        errorMessage = error.message;
+      }
+    }
+
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "erro ao processar pagamento com cartão",
+        error: "PAYMENT_ERROR",
+        message: errorMessage,
       },
-      { status: 500 }
+      { status: statusCode }
     );
   }
 }

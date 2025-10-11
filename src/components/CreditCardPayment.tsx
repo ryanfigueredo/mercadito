@@ -136,7 +136,9 @@ export default function CreditCardPayment({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Erro ao processar pagamento");
+        const errorMessage =
+          data.message || data.error || "Erro ao processar pagamento";
+        throw new Error(errorMessage);
       }
 
       // Verificar status do Pagar.me

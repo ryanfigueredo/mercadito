@@ -55,7 +55,9 @@ export default function PixPayment({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Erro ao processar pagamento PIX");
+        const errorMessage =
+          data.message || data.error || "Erro ao processar pagamento PIX";
+        throw new Error(errorMessage);
       }
 
       setPixData(data);
