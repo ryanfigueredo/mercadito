@@ -25,9 +25,23 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const unreadOnly = searchParams.get("unreadOnly") === "true";
 
-    // Temporariamente retornar array vazio até implementar notificações
-    const notifications: any[] = [];
-    const unreadCount = 0;
+    const notifications = await prisma.notification.findMany({
+      where: {
+        userId: user.id,
+        ...(unreadOnly ? { isRead: false } : {}),
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 50, // Limitar a 50 notificações
+    });
+
+    const unreadCount = await prisma.notification.count({
+      where: {
+        userId: user.id,
+        isRead: false,
+      },
+    });
 
     return NextResponse.json({ notifications, unreadCount });
   } catch (error) {

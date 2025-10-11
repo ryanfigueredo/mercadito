@@ -136,3 +136,4 @@ enum NotificationType {
   PROMOTION           // Promoção
   GENERAL             // Geral
 }
+

@@ -22,6 +22,7 @@ export async function createNotification(params: CreateNotificationParams) {
         actionUrl: params.actionUrl,
       },
     });
+    console.log(`📢 Notificação criada: ${params.title}`);
     return notification;
   } catch (error) {
     console.error("Erro ao criar notificação:", error);
