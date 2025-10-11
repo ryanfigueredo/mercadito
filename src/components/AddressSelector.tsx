@@ -35,6 +35,7 @@ export default function AddressSelector({
     state: "",
     zip: "",
   });
+  const [loadingCep, setLoadingCep] = useState(false);
 
   useEffect(() => {
     fetchAddresses();
@@ -84,6 +85,34 @@ export default function AddressSelector({
 
   const formatZip = (zip: string) => {
     return zip.replace(/\D/g, "").replace(/(\d{5})(\d{3})/, "$1-$2");
+  };
+
+  const fetchCepData = async (cep: string) => {
+    const cleanCep = cep.replace(/\D/g, "");
+    if (cleanCep.length !== 8) return;
+
+    setLoadingCep(true);
+    try {
+      const response = await fetch(
+        `/api/shipping/calculate?zipCode=${cleanCep}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.address) {
+          setNewAddress({
+            ...newAddress,
+            street: data.address.street || "",
+            city: data.address.city || "",
+            state: data.address.state || "",
+            zip: cep,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao buscar CEP:", error);
+    } finally {
+      setLoadingCep(false);
+    }
   };
 
   if (loading) {
@@ -173,7 +202,7 @@ export default function AddressSelector({
                 onChange={(e) =>
                   setNewAddress({ ...newAddress, street: e.target.value })
                 }
-                placeholder="Rua, número, complemento"
+                placeholder="Digite o endereço"
                 required
               />
             </div>
@@ -187,19 +216,19 @@ export default function AddressSelector({
                   onChange={(e) =>
                     setNewAddress({ ...newAddress, city: e.target.value })
                   }
-                  placeholder="São Paulo"
+                  placeholder="Digite a cidade"
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="state">Estado</Label>
+                <Label htmlFor="state">UF</Label>
                 <Input
                   id="state"
                   value={newAddress.state}
                   onChange={(e) =>
                     setNewAddress({ ...newAddress, state: e.target.value })
                   }
-                  placeholder="SP"
+                  placeholder="Ex: SP"
                   maxLength={2}
                   required
                 />
@@ -208,19 +237,31 @@ export default function AddressSelector({
 
             <div>
               <Label htmlFor="zip">CEP</Label>
-              <Input
-                id="zip"
-                value={newAddress.zip}
-                onChange={(e) =>
-                  setNewAddress({
-                    ...newAddress,
-                    zip: formatZip(e.target.value),
-                  })
-                }
-                placeholder="00000-000"
-                maxLength={9}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="zip"
+                  value={newAddress.zip}
+                  onChange={(e) => {
+                    const formattedZip = formatZip(e.target.value);
+                    setNewAddress({
+                      ...newAddress,
+                      zip: formattedZip,
+                    });
+                    // Buscar dados do CEP automaticamente
+                    if (formattedZip.replace(/\D/g, "").length === 8) {
+                      fetchCepData(formattedZip);
+                    }
+                  }}
+                  placeholder="00000-000"
+                  maxLength={9}
+                  required
+                />
+                {loadingCep && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="animate-spin w-4 h-4 border-2 border-[#F8B075] border-t-transparent rounded-full"></div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex gap-2">

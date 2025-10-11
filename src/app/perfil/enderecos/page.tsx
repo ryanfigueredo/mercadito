@@ -81,7 +81,8 @@ export default async function EnderecosPage() {
                 <input
                   name="zip"
                   className="input"
-                  placeholder="Insira o CEP da rua"
+                  placeholder="00000-000"
+                  maxLength={9}
                   required
                 />
               </Field>
@@ -91,17 +92,18 @@ export default async function EnderecosPage() {
                     <input
                       name="city"
                       className="input"
-                      placeholder="Insira o nome da cidade"
+                      placeholder="Digite a cidade"
                       required
                     />
                   </Field>
                 </div>
                 <div>
-                  <Field label="Estado">
+                  <Field label="UF">
                     <input
                       name="state"
                       className="input"
-                      placeholder="--"
+                      placeholder="Ex: SP"
+                      maxLength={2}
                       required
                     />
                   </Field>
@@ -111,7 +113,7 @@ export default async function EnderecosPage() {
                 <input
                   name="street"
                   className="input"
-                  placeholder="Insira o nome da rua"
+                  placeholder="Digite o endereço"
                   required
                 />
               </Field>
@@ -121,13 +123,17 @@ export default async function EnderecosPage() {
                     <input
                       name="district"
                       className="input"
-                      placeholder="Insira o nome do bairro"
+                      placeholder="Digite o bairro"
                     />
                   </Field>
                 </div>
                 <div>
                   <Field label="Número">
-                    <input name="number" className="input" placeholder="--" />
+                    <input
+                      name="number"
+                      className="input"
+                      placeholder="Ex: 123"
+                    />
                   </Field>
                 </div>
               </div>
