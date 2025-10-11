@@ -65,12 +65,13 @@ export async function POST(req: NextRequest) {
 
     // Preparar itens e calcular total
     let itemsTotalCents = 0;
-    const pagarmeItems = items.map((item) => {
+    const pagarmeItems = items.map((item, index) => {
       const amount = Math.round(item.price * 100); // converter para centavos
       const quantity = item.quantity || 1;
       itemsTotalCents += amount * quantity;
 
       return {
+        code: item.id || `item_${index + 1}`, // Adicionar código obrigatório
         amount,
         description: item.name,
         quantity,
@@ -83,6 +84,7 @@ export async function POST(req: NextRequest) {
     // Adicionar frete como item separado no Pagar.me (apenas se > 0)
     if (freightCents > 0) {
       pagarmeItems.push({
+        code: "frete",
         amount: freightCents,
         description: "Frete",
         quantity: 1,
