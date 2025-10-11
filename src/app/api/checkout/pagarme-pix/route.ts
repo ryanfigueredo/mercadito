@@ -195,21 +195,10 @@ export async function POST(req: NextRequest) {
     // Atualizar pedido com dados do Pagar.me
     const charge = pagarmeOrder.charges?.[0];
 
-    console.log("=== PIX DEBUG ===");
-    console.log("Order:", pagarmeOrder.id);
-    console.log("Charge:", charge?.id);
-    console.log("Charge status:", charge?.status);
-
     // Os dados do PIX estão em last_transaction, não em pix
     const pixData = charge?.last_transaction;
-    console.log("PIX Data:", pixData);
 
     if (pixData?.qr_code) {
-      console.log(
-        "✅ QR Code encontrado:",
-        pixData.qr_code.substring(0, 50) + "..."
-      );
-
       await prisma.order.update({
         where: { id: order.id },
         data: {
@@ -219,23 +208,15 @@ export async function POST(req: NextRequest) {
           pixQrCodeUrl: pixData.qr_code_url,
         },
       });
-    } else {
-      console.log("❌ QR Code não encontrado");
-      console.log("PIX Data completo:", JSON.stringify(pixData, null, 2));
     }
 
-    const response = {
+    return NextResponse.json({
       orderId: order.id,
       pixQrCode: pixData?.qr_code || null,
       pixQrCodeUrl: pixData?.qr_code_url || null,
       total: totalCents / 100,
       expiresIn: 3600,
-    };
-
-    console.log("=== RESPOSTA PIX ===");
-    console.log("Response:", response);
-
-    return NextResponse.json(response);
+    });
   } catch (error: unknown) {
     console.error("Erro ao criar pagamento PIX:", error);
     return NextResponse.json(

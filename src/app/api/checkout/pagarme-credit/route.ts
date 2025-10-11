@@ -205,7 +205,7 @@ export async function POST(req: NextRequest) {
           credit_card: {
             installments: cardData.installments || 1,
             statement_descriptor: "MERCADITO",
-            operation_type: "auth_and_capture",
+            operation_type: "auth_only", // Primeiro autorizar
             card: {
               number: cardData.number,
               holder_name: cardData.holderName,
@@ -221,10 +221,6 @@ export async function POST(req: NextRequest) {
                     country: "BR",
                   }
                 : undefined,
-            },
-            // Adicionar configuração de antifraude para ambiente de teste
-            antifraud: {
-              enabled: false, // Desabilitar antifraude em teste
             },
           },
         },
@@ -252,8 +248,36 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Verificar se o pagamento falhou
-    if (charge?.status === "failed") {
+    // Verificar se o pagamento foi autorizado
+    if (charge?.status === "authorized") {
+      console.log("✅ Pagamento autorizado, capturando cobrança...");
+
+      try {
+        // Capturar a cobrança seguindo a documentação do Pagar.me
+        const captureResponse = await pagarmeClient.captureCharge(charge.id, {
+          amount: totalCents,
+        });
+
+        console.log("✅ Cobrança capturada:", captureResponse.id);
+
+        // Atualizar pedido com status confirmado
+        await prisma.order.update({
+          where: { id: order.id },
+          data: {
+            status: "CONFIRMED",
+          },
+        });
+      } catch (captureError) {
+        console.error("❌ Erro ao capturar cobrança:", captureError);
+        return NextResponse.json(
+          {
+            error: "CAPTURE_FAILED",
+            message: "Erro ao finalizar pagamento",
+          },
+          { status: 500 }
+        );
+      }
+    } else if (charge?.status === "failed") {
       const lastTransaction = charge.last_transaction;
       const errorMessage =
         lastTransaction?.gateway_response?.errors?.[0]?.message ||

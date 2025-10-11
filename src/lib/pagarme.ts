@@ -137,6 +137,29 @@ export class PagarMeClient {
     }
   }
 
+  async captureCharge(
+    chargeId: string,
+    data?: { amount?: number; code?: string }
+  ): Promise<any> {
+    try {
+      const response = await axios.post(
+        `${this.baseURL}/charges/${chargeId}/capture`,
+        data || {},
+        {
+          headers: this.getHeaders(),
+        }
+      );
+
+      return response.data;
+    } catch (error: unknown) {
+      console.error(
+        "Erro ao capturar cobrança:",
+        (error as any)?.response?.data || (error as Error)?.message
+      );
+      throw new Error("Erro ao capturar pagamento");
+    }
+  }
+
   async cancelCharge(chargeId: string): Promise<void> {
     try {
       await axios.delete(`${this.baseURL}/charges/${chargeId}`, {
