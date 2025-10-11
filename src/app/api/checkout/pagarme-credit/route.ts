@@ -285,10 +285,20 @@ export async function POST(req: NextRequest) {
 
       console.error("❌ Pagamento falhou:", errorMessage);
 
+      // Mensagem específica para erro de ambiente não configurado
+      let userMessage = errorMessage;
+      if (errorMessage.includes("Sem ambiente configurado")) {
+        userMessage =
+          "Conta do Pagar.me não configurada. Entre em contato com o suporte.";
+      } else if (errorMessage.includes("action_forbidden")) {
+        userMessage =
+          "Pagamento não autorizado. Verifique as configurações da conta.";
+      }
+
       return NextResponse.json(
         {
           error: "PAYMENT_FAILED",
-          message: errorMessage,
+          message: userMessage,
           details: lastTransaction?.gateway_response?.errors,
         },
         { status: 400 }

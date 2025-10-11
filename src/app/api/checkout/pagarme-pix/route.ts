@@ -195,6 +195,34 @@ export async function POST(req: NextRequest) {
     // Atualizar pedido com dados do Pagar.me
     const charge = pagarmeOrder.charges?.[0];
 
+    // Verificar se o pagamento falhou
+    if (charge?.status === "failed") {
+      const lastTransaction = charge.last_transaction;
+      const errorMessage =
+        lastTransaction?.gateway_response?.errors?.[0]?.message ||
+        "Pagamento PIX falhou";
+
+      console.error("❌ PIX falhou:", errorMessage);
+
+      // Mensagem específica para erro de ambiente não configurado
+      let userMessage = errorMessage;
+      if (errorMessage.includes("Sem ambiente configurado")) {
+        userMessage =
+          "Conta do Pagar.me não configurada. Entre em contato com o suporte.";
+      } else if (errorMessage.includes("action_forbidden")) {
+        userMessage =
+          "PIX não autorizado. Verifique as configurações da conta.";
+      }
+
+      return NextResponse.json(
+        {
+          error: "PAYMENT_FAILED",
+          message: userMessage,
+        },
+        { status: 400 }
+      );
+    }
+
     // Os dados do PIX estão em last_transaction, não em pix
     const pixData = charge?.last_transaction;
 
