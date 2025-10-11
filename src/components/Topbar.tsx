@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { BellIcon } from "@/components/ui/icons";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function Topbar({
   address: _address,
@@ -22,12 +22,7 @@ export default function Topbar({
             priority
           />
         </Link>
-        <button
-          aria-label="Notificações"
-          className="ml-auto rounded-full text-white border border-white p-2 "
-        >
-          <BellIcon />
-        </button>
+        <NotificationBell />
       </div>
     </header>
   );

@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {
+  notifyPaymentApproved,
+  notifyPaymentFailed,
+  notifyOrderConfirmed,
+} from "@/lib/notifications";
 // import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
@@ -96,6 +101,14 @@ async function handleChargePaid(charge: { id: string; status: string }) {
       });
 
       console.log(`Pedido ${order.id} confirmado via Pagar.me`);
+
+      // Criar notificações
+      await notifyPaymentApproved(
+        order.userId,
+        order.id,
+        order.totalCents + order.shippingCents
+      );
+      await notifyOrderConfirmed(order.userId, order.id, order.id);
     }
   } catch (error) {
     console.error("Erro ao processar cobrança paga:", error);
@@ -115,6 +128,9 @@ async function handleChargeFailed(charge: { id: string; status: string }) {
       });
 
       console.log(`Pedido ${order.id} cancelado por falha no pagamento`);
+
+      // Notificar falha no pagamento
+      await notifyPaymentFailed(order.userId, order.id);
     }
   } catch (error) {
     console.error("Erro ao processar cobrança falhada:", error);

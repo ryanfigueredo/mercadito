@@ -13,20 +13,21 @@ datasource db {
 // Basic e-commerce models (MVP)
 
 model User {
-  id                    String    @id @default(cuid())
+  id                    String         @id @default(cuid())
   name                  String
-  email                 String    @unique
+  email                 String         @unique
   password              String
-  document              String?   @unique // CPF/CNPJ para Pagar.me
-  phone                 String?   // Telefone para Pagar.me
-  isAdmin               Boolean   @default(false) // Permissão para acessar área admin
-  passwordResetToken    String?   // Token para reset de senha
-  passwordResetExpires  DateTime? // Expiração do token de reset
+  document              String?        @unique // CPF/CNPJ para Pagar.me
+  phone                 String?        // Telefone para Pagar.me
+  isAdmin               Boolean        @default(false) // Permissão para acessar área admin
+  passwordResetToken    String?        // Token para reset de senha
+  passwordResetExpires  DateTime?      // Expiração do token de reset
   addresses             Address[]
   orders                Order[]
-  cards                 SavedCard[] // Cartões salvos
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  cards                 SavedCard[]    // Cartões salvos
+  notifications         Notification[] // Notificações do usuário
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
 }
 
 model Address {
@@ -108,4 +109,30 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELED
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  user        User             @relation(fields: [userId], references: [id])
+  userId      String
+  type        NotificationType // Tipo de notificação
+  title       String           // Título da notificação
+  message     String           // Mensagem detalhada
+  isRead      Boolean          @default(false) // Se foi lida ou não
+  relatedId   String?          // ID relacionado (pedido, pagamento, etc)
+  actionUrl   String?          // URL para ação (link para pedido, etc)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+enum NotificationType {
+  PAYMENT_APPROVED    // Pagamento aprovado
+  PAYMENT_FAILED      // Pagamento falhou
+  ORDER_CONFIRMED     // Pedido confirmado
+  ORDER_SHIPPED       // Pedido saiu para entrega
+  ORDER_DELIVERED     // Pedido entregue
+  ORDER_CANCELED      // Pedido cancelado
+  ADMIN_MESSAGE       // Mensagem do admin
+  PROMOTION           // Promoção
+  GENERAL             // Geral
 }

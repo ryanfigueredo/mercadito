@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { getSecureImageUrl } from "@/lib/image-utils";
+import { Check, X, AlertTriangle } from "lucide-react";
 
 type Product = {
   id: string;
@@ -152,8 +153,8 @@ export default function EstoquePage() {
       {lowStockProducts.length > 0 && (
         <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-sm">
-              ⚠️
+            <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white">
+              <AlertTriangle size={16} />
             </div>
             <div>
               <h3 className="font-semibold text-orange-900">
@@ -350,7 +351,7 @@ function ProductStockCard({
                       onClick={handleStockSave}
                       className="text-green-600 hover:text-green-700 text-xs"
                     >
-                      ✓
+                      <Check size={16} />
                     </button>
                     <button
                       onClick={() => {
@@ -359,7 +360,7 @@ function ProductStockCard({
                       }}
                       className="text-red-600 hover:text-red-700 text-xs"
                     >
-                      ✕
+                      <X size={16} />
                     </button>
                   </div>
                 ) : (

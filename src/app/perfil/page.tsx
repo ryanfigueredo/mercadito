@@ -4,14 +4,15 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import {
-  PencilIcon,
-  CreditCardIcon,
-  MapPinIcon,
-  FileTextIcon,
-  HelpCircleIcon,
-  LogOutIcon,
-  BarChart3Icon,
-} from "@/components/ui/icons";
+  PenTool,
+  CreditCard,
+  MapPin,
+  FileText,
+  HelpCircle,
+  LogOut,
+  BarChart3,
+  ChevronRight,
+} from "lucide-react";
 import { redirect } from "next/navigation";
 import LogoutButton from "@/components/LogoutButton";
 
@@ -33,7 +34,7 @@ function MenuItem({
     <Link href={href} className="flex items-center gap-3 p-4 ">
       <Icon size={18} className="text-muted" />
       <span className="flex-1">{label}</span>
-      <span className="text-muted">›</span>
+      <ChevronRight size={16} className="text-muted" />
     </Link>
   );
 }
@@ -95,34 +96,34 @@ export default async function PerfilPage() {
               {dbUser.isAdmin && (
                 <MenuItem
                   href="/admin"
-                  Icon={BarChart3Icon}
+                  Icon={BarChart3}
                   label="Acessar Admin"
                 />
               )}
 
               <MenuItem
                 href="/perfil/editar"
-                Icon={PencilIcon}
+                Icon={PenTool}
                 label="Editar Perfil"
               />
               <MenuItem
                 href="/perfil/pagamentos"
-                Icon={CreditCardIcon}
+                Icon={CreditCard}
                 label="Métodos de Pagamento"
               />
               <MenuItem
                 href="/perfil/enderecos"
-                Icon={MapPinIcon}
+                Icon={MapPin}
                 label="Endereços"
               />
               <MenuItem
                 href="/perfil/termos"
-                Icon={FileTextIcon}
+                Icon={FileText}
                 label="Termos e Condições"
               />
               <MenuItem
                 href="/perfil/ajuda"
-                Icon={HelpCircleIcon}
+                Icon={HelpCircle}
                 label="Ajuda e Suporte"
               />
 

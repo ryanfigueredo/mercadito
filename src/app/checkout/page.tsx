@@ -8,7 +8,16 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import PaymentModal from "@/components/PaymentModal";
 import AddressSelector, { type Address } from "@/components/AddressSelector";
-import { CreditCard, Truck } from "lucide-react";
+import {
+  CreditCard,
+  Truck,
+  CheckCircle,
+  ShoppingCart,
+  ArrowLeft,
+  Minus,
+  Plus,
+  ArrowRight,
+} from "lucide-react";
 
 export default function CheckoutPage() {
   const { data: session, status } = useSession();
@@ -145,7 +154,7 @@ export default function CheckoutPage() {
         <main className="mx-auto max-w-sm px-4 pb-32">
           <div className="mt-12 text-center">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center">
-              <div className="text-3xl">✅</div>
+              <CheckCircle className="w-12 h-12 text-green-600" />
             </div>
             <h1 className="text-2xl font-bold mb-3 text-gray-900">
               Pedido Confirmado!
@@ -189,9 +198,10 @@ export default function CheckoutPage() {
           {step === "payment" && (
             <button
               onClick={handleBackToAddress}
-              className="text-[#F8B075] font-medium text-sm"
+              className="text-[#F8B075] font-medium text-sm flex items-center gap-1"
             >
-              ← Voltar
+              <ArrowLeft size={16} />
+              Voltar
             </button>
           )}
         </div>
@@ -202,7 +212,6 @@ export default function CheckoutPage() {
           <div className="rounded-2xl border bg-white overflow-hidden">
             {items.length === 0 && (
               <div className="p-6 text-center">
-                <div className="text-4xl mb-2">🛒</div>
                 <p className="text-gray-500">Seu carrinho está vazio</p>
               </div>
             )}
@@ -226,7 +235,7 @@ export default function CheckoutPage() {
                         className="h-8 w-8 flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-l-xl"
                         onClick={() => dec(i.id)}
                       >
-                        −
+                        <Minus size={16} />
                       </button>
                       <span className="px-3 text-sm min-w-[40px] text-center font-medium">
                         {i.qty}
@@ -237,7 +246,7 @@ export default function CheckoutPage() {
                         className="h-8 w-8 flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-r-xl"
                         onClick={() => inc(i.id)}
                       >
-                        +
+                        <Plus size={16} />
                       </button>
                     </div>
                   )}
@@ -333,7 +342,7 @@ export default function CheckoutPage() {
                       Pagamento instantâneo
                     </p>
                   </div>
-                  <div className="text-gray-400">→</div>
+                  <ArrowRight size={16} className="text-gray-400" />
                 </button>
 
                 <button
@@ -351,7 +360,7 @@ export default function CheckoutPage() {
                       Parcelamento disponível
                     </p>
                   </div>
-                  <div className="text-gray-400">→</div>
+                  <ArrowRight size={16} className="text-gray-400" />
                 </button>
 
                 <button
@@ -369,7 +378,7 @@ export default function CheckoutPage() {
                       Pague diretamente ao entregador
                     </p>
                   </div>
-                  <div className="text-gray-400">→</div>
+                  <ArrowRight size={16} className="text-gray-400" />
                 </button>
               </div>
             </div>
@@ -400,8 +409,8 @@ export default function CheckoutPage() {
               variant="outline"
               className="w-full h-12 rounded-2xl"
             >
-              <Link href="/">
-                <span className="mr-2">←</span>
+              <Link href="/" className="flex items-center gap-2">
+                <ArrowLeft size={16} />
                 Continuar Comprando
               </Link>
             </Button>

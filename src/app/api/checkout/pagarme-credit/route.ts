@@ -174,7 +174,8 @@ export async function POST(req: NextRequest) {
 
     // Criar pedido no Pagar.me
     const pagarmeClient = getPagarMeClient();
-    const pagarmeOrder = await pagarmeClient.createOrder({
+
+    const pagarmePayload = {
       items: pagarmeItems,
       customer: {
         name: user.name,
@@ -215,7 +216,15 @@ export async function POST(req: NextRequest) {
           },
         },
       ],
-    });
+    };
+
+    console.log("=== ENVIANDO PARA PAGAR.ME ===");
+    console.log("Payload:", JSON.stringify(pagarmePayload, null, 2));
+
+    const pagarmeOrder = await pagarmeClient.createOrder(pagarmePayload);
+
+    console.log("=== RESPOSTA PAGAR.ME ===");
+    console.log("Order criado:", JSON.stringify(pagarmeOrder, null, 2));
 
     // Atualizar pedido com dados do Pagar.me
     const charge = pagarmeOrder.charges?.[0];

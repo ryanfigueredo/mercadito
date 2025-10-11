@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { getSecureImageUrl } from "@/lib/image-utils";
-import { ImageOff, TriangleAlert } from "lucide-react";
+import { ImageOff, TriangleAlert, Trash2 } from "lucide-react";
 
 type Product = {
   id: string;
@@ -403,7 +403,8 @@ function ProductCard({
                 onClick={() => onDelete(product.id)}
                 className="text-red-600 hover:text-white hover:bg-red-600 hover:border-red-600 transition-all"
               >
-                🗑️ Excluir
+                <Trash2 size={16} className="mr-1" />
+                Excluir
               </Button>
             </div>
           </div>

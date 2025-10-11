@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { SearchIcon } from "@/components/ui/icons";
 import { Button } from "@/components/ui/button";
+import { ChevronRight } from "lucide-react";
 
 type Order = {
   id: string;
@@ -156,7 +157,9 @@ export default function AdminPedidosPage() {
             disabled={page * pageSize >= total}
             onClick={() => load(page + 1)}
           >
-            Próxima
+            <span className="flex items-center gap-1">
+              Próxima <ChevronRight size={16} />
+            </span>
           </Button>
         </div>
       </div>

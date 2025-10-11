@@ -1,6 +1,6 @@
 "use client";
 import { signOut } from "next-auth/react";
-import { LogOutIcon } from "@/components/ui/icons";
+import { LogOut, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type IconComponent = (props: {
@@ -9,7 +9,7 @@ type IconComponent = (props: {
 }) => React.ReactElement;
 
 export default function LogoutButton({
-  Icon = LogOutIcon,
+  Icon = LogOut,
   label = "Sair",
 }: {
   Icon?: IconComponent;
@@ -23,7 +23,7 @@ export default function LogoutButton({
     >
       <Icon size={18} className="text-muted" />
       <span className="flex-1">{label}</span>
-      <span className="text-muted">›</span>
+      <ChevronRight size={16} className="text-muted" />
     </Button>
   );
 }

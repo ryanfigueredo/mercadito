@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { CheckCircle, XCircle } from "lucide-react";
 
 export default function ImportarProdutosPage() {
   const { data: session, status } = useSession();
@@ -165,14 +166,16 @@ export default function ImportarProdutosPage() {
                   >
                     {r.success ? (
                       <span className="text-green-700">
-                        ✅ {r.product?.name} - R${" "}
+                        <CheckCircle size={16} className="inline mr-1" />
+                        {r.product?.name} - R${" "}
                         {r.product?.priceCents
                           ? (r.product.priceCents / 100).toFixed(2)
                           : "0.00"}
                       </span>
                     ) : (
                       <span className="text-red-700">
-                        ❌ {r.product?.name} - {r.error}
+                        <XCircle size={16} className="inline mr-1" />
+                        {r.product?.name} - {r.error}
                       </span>
                     )}
                   </div>
