@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Truck, MapPin, Clock, AlertCircle } from "lucide-react";
 
 interface ShippingCalculatorProps {
@@ -37,7 +37,7 @@ export default function ShippingCalculator({
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const calculateShipping = async () => {
+  const calculateShipping = useCallback(async () => {
     if (!zipCode || zipCode.replace(/\D/g, "").length !== 8) {
       return;
     }
@@ -74,7 +74,7 @@ export default function ShippingCalculator({
     } finally {
       setLoading(false);
     }
-  };
+  }, [zipCode, city, state, onShippingCalculated, onError]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -82,7 +82,7 @@ export default function ShippingCalculator({
     }, 500); // Debounce de 500ms
 
     return () => clearTimeout(timeoutId);
-  }, [zipCode, city, state]);
+  }, [calculateShipping]);
 
   if (!zipCode || zipCode.replace(/\D/g, "").length !== 8) {
     return null;

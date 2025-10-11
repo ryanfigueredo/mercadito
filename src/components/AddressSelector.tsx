@@ -264,9 +264,35 @@ export default function AddressSelector({
               </div>
             </div>
 
+            {/* Botão de Confirmar Endereço - aparece quando todos os campos estão preenchidos */}
+            {newAddress.street &&
+              newAddress.city &&
+              newAddress.state &&
+              newAddress.zip && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-700 mb-3">
+                    ✅ Endereço preenchido automaticamente pelo CEP. Confirme
+                    para continuar:
+                  </p>
+                  <div className="text-sm text-blue-600 mb-2">
+                    <strong>{newAddress.street}</strong>
+                    <br />
+                    {newAddress.city}, {newAddress.state} - {newAddress.zip}
+                  </div>
+                </div>
+              )}
+
             <div className="flex gap-2">
-              <Button type="submit" className="flex-1">
-                Salvar Endereço
+              <Button
+                type="submit"
+                className="flex-1 bg-[#F8B075] hover:bg-[#e69a66]"
+              >
+                {newAddress.street &&
+                newAddress.city &&
+                newAddress.state &&
+                newAddress.zip
+                  ? "Confirmar e Salvar Endereço"
+                  : "Salvar Endereço"}
               </Button>
               <Button
                 type="button"
