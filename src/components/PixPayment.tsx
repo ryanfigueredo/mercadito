@@ -54,12 +54,26 @@ export default function PixPayment({
 
       const data = await response.json();
 
+      console.log("=== PIX FRONTEND DEBUG ===");
+      console.log("Response status:", response.status);
+      console.log("Response data:", data);
+
       if (!response.ok) {
         const errorMessage =
           data.message || data.error || "Erro ao processar pagamento PIX";
+        console.error("❌ PIX Error:", errorMessage);
         throw new Error(errorMessage);
       }
 
+      if (!data.pixQrCode) {
+        console.error("❌ QR Code não recebido:", data);
+        throw new Error("QR Code PIX não foi gerado");
+      }
+
+      console.log(
+        "✅ QR Code recebido:",
+        data.pixQrCode.substring(0, 50) + "..."
+      );
       setPixData(data);
       // NÃO chama onSuccess aqui - aguarda o webhook confirmar o pagamento
       setCheckingPayment(true);
