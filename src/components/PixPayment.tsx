@@ -14,12 +14,19 @@ interface PixPaymentProps {
     state: string;
     zip: string;
   };
+  shippingInfo?: {
+    rateCents: number;
+    rateReais: number;
+    distanceKm: number;
+    estimatedDays: number;
+  };
 }
 
 export default function PixPayment({
   onSuccess,
   onError,
   deliveryAddress,
+  shippingInfo,
 }: PixPaymentProps) {
   const [loading, setLoading] = useState(false);
   const [pixData, setPixData] = useState<PaymentData | null>(null);
@@ -41,6 +48,7 @@ export default function PixPayment({
             quantity: item.qty,
           })),
           deliveryAddress,
+          shippingInfo,
         }),
       });
 

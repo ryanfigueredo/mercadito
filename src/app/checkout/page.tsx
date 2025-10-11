@@ -8,6 +8,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import PaymentModal from "@/components/PaymentModal";
 import AddressSelector, { type Address } from "@/components/AddressSelector";
+import ShippingCalculator from "@/components/ShippingCalculator";
 import {
   CreditCard,
   Truck,
@@ -46,6 +47,13 @@ export default function CheckoutPage() {
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [shippingInfo, setShippingInfo] = useState<{
+    rateCents: number;
+    rateReais: number;
+    distanceKm: number;
+    estimatedDays: number;
+  } | null>(null);
+  const [shippingError, setShippingError] = useState<string | null>(null);
 
   const handlePaymentSuccess = () => {
     setPaymentSuccess(true);
@@ -57,6 +65,16 @@ export default function CheckoutPage() {
   const handlePaymentError = (error: string) => {
     setPaymentError(error);
     setPaymentSuccess(false);
+  };
+
+  const handleShippingCalculated = (shipping: any) => {
+    setShippingInfo(shipping);
+    setShippingError(null);
+  };
+
+  const handleShippingError = (error: string) => {
+    setShippingError(error);
+    setShippingInfo(null);
   };
 
   const handlePaymentMethodSelect = (method: "pix" | "credit" | "delivery") => {
@@ -271,12 +289,18 @@ export default function CheckoutPage() {
             </div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-gray-600">Frete</span>
-              <span className="font-medium">R$ 0,00</span>
+              <span className="font-medium">
+                {shippingInfo
+                  ? shippingInfo.rateReais === 0
+                    ? "GRÁTIS"
+                    : `R$ ${shippingInfo.rateReais.toFixed(2)}`
+                  : "Calculando..."}
+              </span>
             </div>
             <div className="border-t pt-2 flex items-center justify-between">
               <span className="text-lg font-semibold text-gray-900">Total</span>
               <span className="text-lg font-bold text-[#F8B075]">
-                R$ {total.toFixed(2)}
+                R$ {(total + (shippingInfo?.rateReais || 0)).toFixed(2)}
               </span>
             </div>
           </div>
@@ -306,12 +330,25 @@ export default function CheckoutPage() {
                 />
 
                 {selectedAddress && (
-                  <Button
-                    onClick={handleContinueToPayment}
-                    className="w-full h-12 mt-4 bg-[#F8B075] hover:bg-[#e69a66]"
-                  >
-                    Continuar para Pagamento
-                  </Button>
+                  <>
+                    <ShippingCalculator
+                      zipCode={selectedAddress.zip}
+                      city={selectedAddress.city}
+                      state={selectedAddress.state}
+                      onShippingCalculated={handleShippingCalculated}
+                      onError={handleShippingError}
+                    />
+
+                    <Button
+                      onClick={handleContinueToPayment}
+                      className="w-full h-12 mt-4 bg-[#F8B075] hover:bg-[#e69a66]"
+                      disabled={!shippingInfo && !shippingError}
+                    >
+                      {shippingInfo
+                        ? "Continuar para Pagamento"
+                        : "Calculando frete..."}
+                    </Button>
+                  </>
                 )}
               </>
             )}
@@ -385,7 +422,7 @@ export default function CheckoutPage() {
           )}
 
         {/* Modal de Pagamento */}
-        {selectedAddress && (
+        {selectedAddress && shippingInfo && (
           <PaymentModal
             isOpen={showPaymentModal}
             onClose={handleCloseModal}
@@ -398,6 +435,7 @@ export default function CheckoutPage() {
               state: selectedAddress.state,
               zip: selectedAddress.zip,
             }}
+            shippingInfo={shippingInfo}
           />
         )}
 

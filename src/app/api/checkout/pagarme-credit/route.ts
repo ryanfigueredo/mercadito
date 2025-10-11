@@ -11,34 +11,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
 
-    const { items, cardData, deliveryAddress } = (await req.json()) as {
-      items: Array<{
-        id: string;
-        name: string;
-        price: number;
-        quantity: number;
-      }>;
-      cardData: {
-        number: string;
-        holderName: string;
-        expMonth: string;
-        expYear: string;
-        cvv: string;
-        installments: number;
-        billingAddress?: {
-          line1: string;
-          zipCode: string;
+    const { items, cardData, deliveryAddress, shippingInfo } =
+      (await req.json()) as {
+        items: Array<{
+          id: string;
+          name: string;
+          price: number;
+          quantity: number;
+        }>;
+        cardData: {
+          number: string;
+          holderName: string;
+          expMonth: string;
+          expYear: string;
+          cvv: string;
+          installments: number;
+          billingAddress?: {
+            line1: string;
+            zipCode: string;
+            city: string;
+            state: string;
+          };
+        };
+        deliveryAddress: {
+          street: string;
           city: string;
           state: string;
+          zip: string;
+        };
+        shippingInfo?: {
+          rateCents: number;
+          rateReais: number;
+          distanceKm: number;
+          estimatedDays: number;
         };
       };
-      deliveryAddress: {
-        street: string;
-        city: string;
-        state: string;
-        zip: string;
-      };
-    };
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { error: "items obrigatórios" },
@@ -84,7 +91,7 @@ export async function POST(req: NextRequest) {
       };
     });
 
-    const freightCents = 0; // R$0,00 frete zerado para testes
+    const freightCents = shippingInfo?.rateCents || 0; // Usar frete calculado ou R$0,00
     const totalCents = itemsTotalCents + freightCents;
 
     // Adicionar frete como item separado no Pagar.me (apenas se > 0)

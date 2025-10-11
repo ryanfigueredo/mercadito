@@ -21,6 +21,12 @@ interface PaymentModalProps {
     state: string;
     zip: string;
   };
+  shippingInfo?: {
+    rateCents: number;
+    rateReais: number;
+    distanceKm: number;
+    estimatedDays: number;
+  };
 }
 
 export default function PaymentModal({
@@ -30,6 +36,7 @@ export default function PaymentModal({
   onSuccess,
   onError,
   deliveryAddress,
+  shippingInfo,
 }: PaymentModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [showCpfRegistration, setShowCpfRegistration] = useState(false);
@@ -130,6 +137,7 @@ export default function PaymentModal({
                   onSuccess={onSuccess}
                   onError={handlePaymentError}
                   deliveryAddress={deliveryAddress}
+                  shippingInfo={shippingInfo}
                 />
               )}
 
@@ -139,6 +147,7 @@ export default function PaymentModal({
                   onError={handlePaymentError}
                   onProcessingChange={setIsProcessing}
                   deliveryAddress={deliveryAddress}
+                  shippingInfo={shippingInfo}
                 />
               )}
 
@@ -147,6 +156,7 @@ export default function PaymentModal({
                   onSuccess={onSuccess}
                   onError={onError}
                   deliveryAddress={deliveryAddress}
+                  shippingInfo={shippingInfo}
                 />
               )}
             </>

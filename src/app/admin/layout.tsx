@@ -7,6 +7,7 @@ import {
   BarChart3Icon,
   UsersIcon,
 } from "@/components/ui/icons";
+import { Truck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -66,6 +67,11 @@ export default async function AdminLayout({
               href="/admin/estoque"
               icon={<UsersIcon size={16} />}
               label="Estoque"
+            />
+            <AdminNavLink
+              href="/admin/frete"
+              icon={<Truck size={16} />}
+              label="Frete"
             />
           </nav>
         </div>

@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
 
-    const { items, deliveryAddress } = (await req.json()) as {
+    const { items, deliveryAddress, shippingInfo } = (await req.json()) as {
       items: Array<{
         id: string;
         name: string;
@@ -23,6 +23,12 @@ export async function POST(req: NextRequest) {
         city: string;
         state: string;
         zip: string;
+      };
+      shippingInfo?: {
+        rateCents: number;
+        rateReais: number;
+        distanceKm: number;
+        estimatedDays: number;
       };
     };
     if (!Array.isArray(items) || items.length === 0) {
@@ -78,7 +84,7 @@ export async function POST(req: NextRequest) {
       };
     });
 
-    const freightCents = 0; // R$0,00 frete zerado para testes
+    const freightCents = shippingInfo?.rateCents || 0; // Usar frete calculado ou R$0,00
     const totalCents = itemsTotalCents + freightCents;
 
     // Adicionar frete como item separado no Pagar.me (apenas se > 0)

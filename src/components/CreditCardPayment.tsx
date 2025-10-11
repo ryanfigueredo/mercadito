@@ -18,6 +18,12 @@ interface CreditCardPaymentProps {
     state: string;
     zip: string;
   };
+  shippingInfo?: {
+    rateCents: number;
+    rateReais: number;
+    distanceKm: number;
+    estimatedDays: number;
+  };
 }
 
 export default function CreditCardPayment({
@@ -25,6 +31,7 @@ export default function CreditCardPayment({
   onError,
   onProcessingChange,
   deliveryAddress,
+  shippingInfo,
 }: CreditCardPaymentProps) {
   const [loading, setLoading] = useState(false);
   const [cardData, setCardData] = useState<CardData>({
@@ -108,6 +115,7 @@ export default function CreditCardPayment({
             quantity: item.qty,
           })),
           deliveryAddress,
+          shippingInfo,
           cardData: {
             number: cardData.number.replace(/\s/g, ""),
             holderName: cardData.holderName,

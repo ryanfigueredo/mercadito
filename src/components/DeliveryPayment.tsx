@@ -14,12 +14,19 @@ interface DeliveryPaymentProps {
     state: string;
     zip: string;
   };
+  shippingInfo?: {
+    rateCents: number;
+    rateReais: number;
+    distanceKm: number;
+    estimatedDays: number;
+  };
 }
 
 export default function DeliveryPayment({
   onSuccess,
   onError,
   deliveryAddress,
+  shippingInfo,
 }: DeliveryPaymentProps) {
   const [loading, setLoading] = useState(false);
   const items = useCart((s) => s.items);
@@ -41,7 +48,7 @@ export default function DeliveryPayment({
           unitPriceCents: Math.round(item.price * 100),
         })),
         totalCents: Math.round(total * 100),
-        shippingCents: 2000,
+        shippingCents: shippingInfo?.rateCents || 2000,
         paymentMethod: "delivery",
         deliveryAddress: deliveryAddress.street,
         deliveryCity: deliveryAddress.city,
@@ -97,12 +104,18 @@ export default function DeliveryPayment({
           </div>
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm text-gray-600">Frete</span>
-            <span className="text-sm font-medium">R$ 20,00</span>
+            <span className="text-sm font-medium">
+              {shippingInfo
+                ? shippingInfo.rateReais === 0
+                  ? "GRÁTIS"
+                  : `R$ ${shippingInfo.rateReais.toFixed(2)}`
+                : "R$ 20,00"}
+            </span>
           </div>
           <div className="border-t pt-2 flex justify-between items-center">
             <span className="font-semibold text-gray-900">Total a pagar</span>
             <span className="text-lg font-bold text-[#F8B075]">
-              R$ {(total + 20).toFixed(2)}
+              R$ {(total + (shippingInfo?.rateReais || 20)).toFixed(2)}
             </span>
           </div>
         </div>
