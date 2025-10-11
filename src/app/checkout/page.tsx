@@ -8,7 +8,6 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import PaymentModal from "@/components/PaymentModal";
 import AddressSelector, { type Address } from "@/components/AddressSelector";
-import ShippingCalculator from "@/components/ShippingCalculator";
 import {
   CreditCard,
   Truck,
@@ -18,6 +17,10 @@ import {
   Minus,
   Plus,
   ArrowRight,
+  MapPin,
+  Clock,
+  AlertCircle,
+  Sparkles,
 } from "lucide-react";
 
 export default function CheckoutPage() {
@@ -75,6 +78,34 @@ export default function CheckoutPage() {
   const handleShippingError = (error: string) => {
     setShippingError(error);
     setShippingInfo(null);
+  };
+
+  const handleAddressShippingCalculate = async (address: any) => {
+    try {
+      const response = await fetch("/api/shipping/calculate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          zipCode: address.zip.replace(/\D/g, ""),
+          city: address.city,
+          state: address.state,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Erro ao calcular frete");
+      }
+
+      handleShippingCalculated(data.shipping);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Erro ao calcular frete";
+      handleShippingError(errorMessage);
+    }
   };
 
   const handlePaymentMethodSelect = (method: "pix" | "credit" | "delivery") => {
@@ -327,28 +358,101 @@ export default function CheckoutPage() {
                   selectedAddress={selectedAddress}
                   onAddressSelect={setSelectedAddress}
                   onAddressCreate={handleAddressCreate}
+                  onShippingCalculate={handleAddressShippingCalculate}
                 />
 
-                {selectedAddress && (
-                  <>
-                    <ShippingCalculator
-                      zipCode={selectedAddress.zip}
-                      city={selectedAddress.city}
-                      state={selectedAddress.state}
-                      onShippingCalculated={handleShippingCalculated}
-                      onError={handleShippingError}
-                    />
+                {selectedAddress && shippingInfo && (
+                  <div className="mt-4 p-4 rounded-2xl bg-blue-50 border border-blue-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Truck className="w-5 h-5 text-blue-600" />
+                      <h3 className="font-semibold text-blue-900">
+                        Frete e Entrega
+                      </h3>
+                    </div>
 
-                    <Button
-                      onClick={handleContinueToPayment}
-                      className="w-full h-12 mt-4 bg-[#F8B075] hover:bg-[#e69a66]"
-                      disabled={!shippingInfo && !shippingError}
-                    >
-                      {shippingInfo
-                        ? "Continuar para Pagamento"
-                        : "Calculando frete..."}
-                    </Button>
-                  </>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-blue-700">Frete:</span>
+                        <span className="font-semibold text-blue-900">
+                          {shippingInfo.rateReais === 0
+                            ? "GRÁTIS"
+                            : `R$ ${shippingInfo.rateReais.toFixed(2)}`}
+                        </span>
+                      </div>
+
+                      {shippingInfo.distanceKm > 0 && (
+                        <div className="flex items-center gap-2 text-xs text-blue-600">
+                          <MapPin className="w-3 h-3" />
+                          <span>
+                            {shippingInfo.distanceKm}km de{" "}
+                            {shippingInfo.origin.city}/
+                            {shippingInfo.origin.state}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-2 text-xs text-blue-600">
+                        <Clock className="w-3 h-3" />
+                        <span>
+                          Entrega em até {shippingInfo.estimatedDays}{" "}
+                          {shippingInfo.estimatedDays === 1
+                            ? "dia útil"
+                            : "dias úteis"}
+                        </span>
+                      </div>
+
+                      {shippingInfo.rateReais === 0 && (
+                        <div className="p-2 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="w-4 h-4 text-green-600" />
+                            <p className="text-xs text-green-700 font-medium">
+                              Frete grátis para sua região!
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {selectedAddress && !shippingInfo && !shippingError && (
+                  <div className="mt-4 p-4 rounded-2xl bg-gray-50 border border-gray-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Truck className="w-5 h-5 text-gray-600" />
+                      <h3 className="font-semibold text-gray-900">
+                        Frete e Entrega
+                      </h3>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      Selecione um endereço para calcular o frete
+                    </p>
+                  </div>
+                )}
+
+                {shippingError && (
+                  <div className="mt-4 p-4 rounded-2xl bg-red-50 border border-red-200">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm text-red-700 font-medium">
+                          Erro no cálculo de frete
+                        </p>
+                        <p className="text-xs text-red-600">{shippingError}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedAddress && (
+                  <Button
+                    onClick={handleContinueToPayment}
+                    className="w-full h-12 mt-4 bg-[#F8B075] hover:bg-[#e69a66]"
+                    disabled={!shippingInfo && !shippingError}
+                  >
+                    {shippingInfo
+                      ? "Continuar para Pagamento"
+                      : "Calculando frete..."}
+                  </Button>
                 )}
               </>
             )}

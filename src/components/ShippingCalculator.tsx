@@ -3,9 +3,11 @@ import { useState, useEffect, useCallback } from "react";
 import { Truck, MapPin, Clock, AlertCircle } from "lucide-react";
 
 interface ShippingCalculatorProps {
-  zipCode: string;
-  city?: string;
-  state?: string;
+  address?: {
+    zip: string;
+    city: string;
+    state: string;
+  };
   onShippingCalculated: (shipping: ShippingInfo) => void;
   onError: (error: string) => void;
 }
@@ -27,9 +29,7 @@ interface ShippingInfo {
 }
 
 export default function ShippingCalculator({
-  zipCode,
-  city,
-  state,
+  address,
   onShippingCalculated,
   onError,
 }: ShippingCalculatorProps) {
@@ -38,7 +38,11 @@ export default function ShippingCalculator({
   const [error, setError] = useState<string | null>(null);
 
   const calculateShipping = useCallback(async () => {
-    if (!zipCode || zipCode.replace(/\D/g, "").length !== 8) {
+    if (
+      !address ||
+      !address.zip ||
+      address.zip.replace(/\D/g, "").length !== 8
+    ) {
       return;
     }
 
@@ -52,9 +56,9 @@ export default function ShippingCalculator({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          zipCode: zipCode.replace(/\D/g, ""),
-          city,
-          state,
+          zipCode: address.zip.replace(/\D/g, ""),
+          city: address.city,
+          state: address.state,
         }),
       });
 
@@ -74,7 +78,7 @@ export default function ShippingCalculator({
     } finally {
       setLoading(false);
     }
-  }, [zipCode, city, state, onShippingCalculated, onError]);
+  }, [address, onShippingCalculated, onError]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -84,7 +88,7 @@ export default function ShippingCalculator({
     return () => clearTimeout(timeoutId);
   }, [calculateShipping]);
 
-  if (!zipCode || zipCode.replace(/\D/g, "").length !== 8) {
+  if (!address || !address.zip || address.zip.replace(/\D/g, "").length !== 8) {
     return null;
   }
 
@@ -123,13 +127,23 @@ export default function ShippingCalculator({
             </span>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-blue-600">
-            <MapPin className="w-3 h-3" />
-            <span>
-              {shippingInfo.distanceKm}km de {shippingInfo.origin.city}/
-              {shippingInfo.origin.state}
-            </span>
-          </div>
+          {shippingInfo.distanceKm > 0 && (
+            <div className="flex items-center gap-2 text-xs text-blue-600">
+              <MapPin className="w-3 h-3" />
+              <span>
+                {shippingInfo.distanceKm}km de {shippingInfo.origin.city}/
+                {shippingInfo.origin.state}
+              </span>
+            </div>
+          )}
+
+          {(shippingInfo as any).note && (
+            <div className="p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-xs text-yellow-700">
+                ℹ️ {(shippingInfo as any).note}
+              </p>
+            </div>
+          )}
 
           <div className="flex items-center gap-2 text-xs text-blue-600">
             <Clock className="w-3 h-3" />

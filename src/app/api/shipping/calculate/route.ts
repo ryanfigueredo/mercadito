@@ -85,7 +85,25 @@ async function getCoordinatesFromCEP(
 
     const nominatimData = await nominatimResponse.json();
     if (nominatimData.length === 0) {
-      throw new Error("Endereço não encontrado");
+      // Tentar uma busca mais genérica apenas com cidade e estado
+      const genericAddress = `${cepData.localidade}, ${cepData.uf}, Brazil`;
+      const genericResponse = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          genericAddress
+        )}&limit=1&countrycodes=br`
+      );
+
+      if (genericResponse.ok) {
+        const genericData = await genericResponse.json();
+        if (genericData.length > 0) {
+          return {
+            lat: parseFloat(genericData[0].lat),
+            lng: parseFloat(genericData[0].lon),
+          };
+        }
+      }
+
+      throw new Error("Endereço não encontrado no sistema de coordenadas");
     }
 
     return {
@@ -130,10 +148,30 @@ export async function POST(req: NextRequest) {
     const destinationCoords = await getCoordinatesFromCEP(cleanZipCode);
 
     if (!destinationCoords) {
-      return NextResponse.json(
-        { error: "Não foi possível calcular o frete para este CEP" },
-        { status: 400 }
-      );
+      // Se não conseguir obter coordenadas, usar frete padrão baseado no estado
+      const isSameState =
+        state?.toUpperCase() === STORE_COORDINATES.state.toUpperCase();
+      const defaultRate = isSameState ? 1500 : 2500; // R$ 15,00 ou R$ 25,00
+
+      return NextResponse.json({
+        success: true,
+        shipping: {
+          rateCents: defaultRate,
+          rateReais: defaultRate / 100,
+          distanceKm: 0, // Distância desconhecida
+          estimatedDays: isSameState ? 2 : 5,
+          origin: {
+            city: STORE_COORDINATES.city,
+            state: STORE_COORDINATES.state,
+          },
+          destination: {
+            zipCode: cleanZipCode,
+            city,
+            state,
+          },
+          note: "Frete estimado - coordenadas não disponíveis",
+        },
+      });
     }
 
     // Calcular distância

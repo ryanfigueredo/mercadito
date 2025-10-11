@@ -18,18 +18,21 @@ interface Address {
 interface AddressSelectorProps {
   onAddressSelect: (address: Address) => void;
   onAddressChange: () => void;
+  onShippingCalculate?: (address: Address) => void;
   selectedAddress?: Address | null;
 }
 
 export default function AddressSelector({
   onAddressSelect,
   onAddressChange,
+  onShippingCalculate,
   selectedAddress,
 }: AddressSelectorProps) {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newAddress, setNewAddress] = useState({
+    label: "Minha Casa",
     street: "",
     city: "",
     state: "",
@@ -64,6 +67,8 @@ export default function AddressSelector({
   const handleAddAddress = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log("📝 Enviando endereço:", newAddress);
+
     try {
       const response = await fetch("/api/user/addresses", {
         method: "POST",
@@ -71,11 +76,32 @@ export default function AddressSelector({
         body: JSON.stringify(newAddress),
       });
 
+      console.log("📡 Resposta da API:", response.status, response.statusText);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("❌ Erro da API:", errorData);
+        alert(
+          `Erro ao salvar endereço: ${errorData.error || "Erro desconhecido"}`
+        );
+        return;
+      }
+
       if (response.ok) {
         const addedAddress = await response.json();
         setAddresses([...addresses, addedAddress]);
         onAddressSelect(addedAddress);
-        setNewAddress({ street: "", city: "", state: "", zip: "" });
+        // Calcular frete automaticamente para o novo endereço
+        if (onShippingCalculate) {
+          onShippingCalculate(addedAddress);
+        }
+        setNewAddress({
+          label: "Minha Casa",
+          street: "",
+          city: "",
+          state: "",
+          zip: "",
+        });
         setShowAddForm(false);
       }
     } catch (error) {
@@ -151,7 +177,13 @@ export default function AddressSelector({
                   ? "border-[#F8B075] bg-orange-50"
                   : "border-gray-200 hover:border-gray-300"
               }`}
-              onClick={() => onAddressSelect(address)}
+              onClick={() => {
+                onAddressSelect(address);
+                // Calcular frete automaticamente quando endereço é selecionado
+                if (onShippingCalculate) {
+                  onShippingCalculate(address);
+                }
+              }}
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -193,6 +225,19 @@ export default function AddressSelector({
             className="space-y-4 p-4 border rounded-lg bg-gray-50"
           >
             <h4 className="font-medium text-gray-900">Novo Endereço</h4>
+
+            <div>
+              <Label htmlFor="label">Nome do Endereço</Label>
+              <Input
+                id="label"
+                value={newAddress.label}
+                onChange={(e) =>
+                  setNewAddress({ ...newAddress, label: e.target.value })
+                }
+                placeholder="Ex: Casa, Trabalho, etc."
+                required
+              />
+            </div>
 
             <div>
               <Label htmlFor="street">Endereço</Label>

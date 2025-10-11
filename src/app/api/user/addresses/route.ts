@@ -18,9 +18,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const { label, street, city, state, zip } = await req.json();
+    const body = await req.json();
+    console.log("📝 API: Dados recebidos:", body);
+
+    const { label, street, city, state, zip } = body;
 
     if (!label || !street || !city || !state || !zip) {
+      console.error("❌ API: Campos obrigatórios faltando:", {
+        label,
+        street,
+        city,
+        state,
+        zip,
+      });
       return NextResponse.json(
         { error: "Todos os campos são obrigatórios" },
         { status: 400 }
