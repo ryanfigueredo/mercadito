@@ -42,10 +42,10 @@ export default function ProductCard({ product }: { product: Product }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow relative">
+    <div className="sol-card overflow-hidden hover:shadow-sol-elevated transition-all duration-200 relative group">
       {/* Product Image */}
       <Link href={`/product/${product.id}`} className="block">
-        <div className="aspect-square w-full bg-gray-50 flex items-center justify-center relative overflow-hidden">
+        <div className="aspect-square w-full bg-sol-gray-light flex items-center justify-center relative overflow-hidden">
           {product.image &&
           product.image !== "/next.svg" &&
           product.image !== "/vercel.svg" &&
@@ -55,7 +55,7 @@ export default function ProductCard({ product }: { product: Product }) {
             <img
               src={getSecureImageUrl(product.image)}
               alt={product.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               onError={(e) => {
                 e.currentTarget.style.display = "none";
                 e.currentTarget.nextElementSibling?.classList.remove("hidden");
@@ -74,7 +74,7 @@ export default function ProductCard({ product }: { product: Product }) {
                 : ""
             }`}
           >
-            <span className="text-sm text-gray-400">Sem imagem</span>
+            <span className="text-sm text-sol-gray-medium">Sem imagem</span>
           </div>
         </div>
       </Link>
@@ -83,7 +83,7 @@ export default function ProductCard({ product }: { product: Product }) {
       <div className="absolute bottom-5 right-5 transform">
         <Button
           onClick={handleAddToCart}
-          className="w-8 h-8 rounded-full bg-[#F8B075] hover:bg-[#e6a065] text-white flex items-center justify-center p-0 shadow-lg"
+          className="w-8 h-8 rounded-full bg-sol-orange hover:bg-primary-600 text-white flex items-center justify-center p-0 shadow-sol-button hover:shadow-sol-elevated transition-all duration-200"
         >
           <Plus size={16} />
         </Button>
@@ -92,12 +92,14 @@ export default function ProductCard({ product }: { product: Product }) {
       {/* Product Info */}
       <div className="p-4 pt-6">
         <Link href={`/product/${product.id}`} className="block">
-          <p className="text-sm text-gray-500 mb-1">{product.category}</p>
-          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
+          <p className="text-sm text-sol-gray-medium mb-1">
+            {product.category}
+          </p>
+          <h3 className="font-semibold text-sol-gray-dark mb-2 line-clamp-2 leading-tight">
             {product.name}
           </h3>
           <div className="flex items-center justify-between">
-            <p className="text-lg font-bold text-gray-900 mb-3">
+            <p className="text-lg font-bold text-sol-gray-dark mb-3">
               R$ {product.price.toFixed(2)}
             </p>
 
@@ -108,9 +110,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Promo Badge */}
         {product.promo && (
           <div className="mb-3">
-            <span className="inline-block bg-black-50 text-black text-xs px-2 py-1 rounded-full">
-              {product.promo.label}
-            </span>
+            <span className="sol-badge-accent">{product.promo.label}</span>
           </div>
         )}
       </div>

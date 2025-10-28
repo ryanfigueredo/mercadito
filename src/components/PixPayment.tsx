@@ -37,7 +37,7 @@ export default function PixPayment({
   const handlePixPayment = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/checkout/pagarme-pix", {
+      const response = await fetch("/api/checkout/mercadopago-pix", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -110,9 +110,9 @@ export default function PixPayment({
 
   if (pixData) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-3 animate-fade-in">
         <div className="text-center">
-          <p className="text-sm text-muted-foreground">
+          <p className="sol-text-secondary">
             Escaneie o QR Code ou copie o código PIX
           </p>
         </div>
@@ -122,7 +122,7 @@ export default function PixPayment({
             <img
               src={pixData.pixQrCodeUrl}
               alt="QR Code PIX"
-              className="w-48 h-48 border rounded-lg"
+              className="w-48 h-48 border rounded-lg shadow-card animate-scale-in"
             />
           </div>
         ) : (
@@ -136,7 +136,7 @@ export default function PixPayment({
 
         <div className="space-y-2 text-center">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => {
               navigator.clipboard.writeText(pixData.pixQrCode || "");
@@ -146,12 +146,12 @@ export default function PixPayment({
           >
             Copiar Código PIX
           </Button>
-          <p className="text-xs text-muted-foreground">
+          <p className="sol-text-secondary text-xs">
             Cole este código no app do seu banco para pagar
           </p>
         </div>
 
-        <div className="text-center text-sm text-muted-foreground">
+        <div className="text-center text-sm sol-text-secondary">
           <p>Valor: R$ {pixData.total.toFixed(2)}</p>
           <p>
             Expira em: {Math.floor((pixData.expiresIn || 3600) / 60)} minutos
@@ -159,8 +159,8 @@ export default function PixPayment({
         </div>
 
         {checkingPayment && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
-            <div className="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center animate-pulse-gentle">
+            <div className="animate-spin w-5 h-5 border-2 border-sol-orange border-t-transparent rounded-full mx-auto mb-2"></div>
             <p className="text-blue-700 text-sm">
               Aguardando confirmação do pagamento...
             </p>
@@ -176,8 +176,8 @@ export default function PixPayment({
   return (
     <div className="space-y-4">
       <div className="text-center">
-        <h3 className="text-lg font-semibold mb-2">Pagamento PIX</h3>
-        <p className="text-sm text-muted-foreground">
+        <h3 className="sol-title-secondary mb-2">Pagamento PIX</h3>
+        <p className="sol-text-secondary">
           {loading
             ? "Gerando pagamento PIX..."
             : "Pague instantaneamente com PIX"}
@@ -186,7 +186,7 @@ export default function PixPayment({
 
       {loading && (
         <div className="flex justify-center">
-          <div className="animate-spin w-8 h-8 border-2 border-[#F8B075] border-t-transparent rounded-full"></div>
+          <div className="animate-spin w-8 h-8 border-2 border-sol-orange border-t-transparent rounded-full"></div>
         </div>
       )}
     </div>

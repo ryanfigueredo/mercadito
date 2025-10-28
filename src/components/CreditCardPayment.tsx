@@ -104,7 +104,7 @@ export default function CreditCardPayment({
     onProcessingChange?.(true);
 
     try {
-      const response = await fetch("/api/checkout/pagarme-credit", {
+      const response = await fetch("/api/checkout/mercadopago-credit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -242,8 +242,8 @@ export default function CreditCardPayment({
     return (
       <div className="space-y-4">
         <div className="text-center">
-          <h3 className="text-lg font-semibold mb-2">Pagamento Aprovado!</h3>
-          <p className="text-sm text-green-600">
+          <h3 className="sol-title-secondary mb-2">Pagamento Aprovado!</h3>
+          <p className="sol-text-primary text-success">
             Seu pagamento foi processado com sucesso
           </p>
         </div>
@@ -254,7 +254,7 @@ export default function CreditCardPayment({
   return (
     <div className="space-y-1 h-full">
       <div className="text-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="sol-text-secondary">
           {loading
             ? "Processando pagamento..."
             : "Preencha os dados do seu cartão"}
@@ -263,11 +263,10 @@ export default function CreditCardPayment({
 
       {loading && (
         <div className="flex justify-center">
-          <div className="animate-spin w-6 h-6 border-2 border-[#F8B075] border-t-transparent rounded-full"></div>
+          <div className="animate-spin w-6 h-6 border-2 border-sol-orange border-t-transparent rounded-full"></div>
         </div>
       )}
 
-      {/* Mensagem de erro do pagamento */}
       {paymentError && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
           <div className="flex items-center space-x-2">
@@ -293,7 +292,12 @@ export default function CreditCardPayment({
 
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <Label htmlFor="cardNumber">Número do Cartão</Label>
+          <Label
+            htmlFor="cardNumber"
+            className="sol-text-primary text-sm font-medium"
+          >
+            Número do Cartão
+          </Label>
           <Input
             id="cardNumber"
             type="text"
@@ -307,11 +311,17 @@ export default function CreditCardPayment({
             }
             maxLength={19}
             required
+            className="sol-input"
           />
         </div>
 
         <div>
-          <Label htmlFor="holderName">Nome no Cartão</Label>
+          <Label
+            htmlFor="holderName"
+            className="sol-text-primary text-sm font-medium"
+          >
+            Nome no Cartão
+          </Label>
           <Input
             id="holderName"
             type="text"
@@ -324,12 +334,18 @@ export default function CreditCardPayment({
               })
             }
             required
+            className="sol-input"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label htmlFor="expirationDate">Validade Mes/Ano (MM/AA)</Label>
+            <Label
+              htmlFor="expirationDate"
+              className="sol-text-primary text-sm font-medium"
+            >
+              Validade Mes/Ano (MM/AA)
+            </Label>
             <Input
               id="expirationDate"
               type="text"
@@ -340,10 +356,16 @@ export default function CreditCardPayment({
               onChange={handleExpirationChange}
               maxLength={5}
               required
+              className="sol-input"
             />
           </div>
           <div>
-            <Label htmlFor="cvv">CVV</Label>
+            <Label
+              htmlFor="cvv"
+              className="sol-text-primary text-sm font-medium"
+            >
+              CVV
+            </Label>
             <Input
               id="cvv"
               type="text"
@@ -357,15 +379,21 @@ export default function CreditCardPayment({
               }
               maxLength={3}
               required
+              className="sol-input"
             />
           </div>
         </div>
 
         <div>
-          <Label htmlFor="installments">Parcelas</Label>
+          <Label
+            htmlFor="installments"
+            className="sol-text-primary text-sm font-medium"
+          >
+            Parcelas
+          </Label>
           <select
             id="installments"
-            className="w-full p-2 border rounded-md"
+            className="sol-input w-full"
             value={cardData.installments}
             onChange={(e) =>
               setCardData({
@@ -390,7 +418,13 @@ export default function CreditCardPayment({
           selectedAddress={selectedAddress}
         />
 
-        {/* Informações sobre parcelamento */}
+        <Button
+          type="submit"
+          className="w-full sol-button-primary"
+          disabled={loading}
+        >
+          {loading ? "Processando..." : "Finalizar Pagamento"}
+        </Button>
       </form>
     </div>
   );

@@ -54,7 +54,12 @@ export default function BuyNowButton({
   };
 
   return (
-    <Button onClick={onClick} disabled={loading} className="w-full mt-3">
+    <Button
+      onClick={onClick}
+      disabled={loading}
+      variant="accent"
+      className="w-full mt-3"
+    >
       {loading ? "Carregando..." : "Comprar agora"}
     </Button>
   );

@@ -7,7 +7,7 @@ import {
   BarChart3Icon,
   UsersIcon,
 } from "@/components/ui/icons";
-import { Truck } from "lucide-react";
+import { Truck, RefreshCw } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -72,6 +72,11 @@ export default async function AdminLayout({
               href="/admin/frete"
               icon={<Truck size={16} />}
               label="Frete"
+            />
+            <AdminNavLink
+              href="/admin/amc-integration"
+              icon={<RefreshCw size={16} />}
+              label="Integração AMC"
             />
           </nav>
         </div>

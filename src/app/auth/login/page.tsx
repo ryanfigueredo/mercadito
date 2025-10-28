@@ -34,11 +34,11 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-sm text-muted">
+      <label htmlFor={id} className="mb-1 block text-sm sol-text-primary">
         {label}
       </label>
       {children}
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-sm text-error">{error}</p>}
     </div>
   );
 }
@@ -53,18 +53,22 @@ function TextInput(
   const { left, right, error: hasError, className, ...rest } = props;
   return (
     <div
-      className={`relative flex items-center rounded-2xl border bg-white ${
-        hasError ? "border-red-500" : "border-gray-300"
+      className={`relative flex items-center rounded-lg border bg-white transition-all duration-200 ${
+        hasError
+          ? "border-error focus-within:border-error focus-within:ring-2 focus-within:ring-error focus-within:ring-opacity-20"
+          : "border-neutral-200 focus-within:border-sol-orange focus-within:ring-2 focus-within:ring-sol-orange focus-within:ring-opacity-20"
       }`}
     >
-      {left && <span className="pl-3 text-muted">{left}</span>}
+      {left && <span className="pl-3 text-sol-gray-medium">{left}</span>}
       <input
         {...rest}
-        className={`h-12 w-full bg-transparent outline-none placeholder:text-muted ${
+        className={`h-12 w-full bg-transparent outline-none text-sol-gray-dark placeholder:text-neutral-400 ${
           left ? "pl-2" : "pl-3"
-        } ${right ? "pr-9" : "pr-3"} rounded-2xl ${className ?? ""}`}
+        } ${right ? "pr-9" : "pr-3"} rounded-lg ${className ?? ""}`}
       />
-      {right && <span className="absolute right-3 text-muted">{right}</span>}
+      {right && (
+        <span className="absolute right-3 text-sol-gray-medium">{right}</span>
+      )}
     </div>
   );
 }
@@ -107,22 +111,20 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-dvh">
-      {/* Hero Peach */}
-      <div className="auth-hero bg-[#F8B075]">
-        <div className="auth-wrap ">
-          <h1 className="text-4xl font-serif font-semibold mb-3 text-white">
+      <div className="auth-hero bg-sol-orange">
+        <div className="auth-wrap">
+          <h1 className="text-4xl font-serif font-semibold mb-3 text-white animate-fade-in">
             mercadito
           </h1>
         </div>
       </div>
 
-      {/* Superfície branca sobreposta */}
-      <div className="auth-surface bg-white rounded-t-3xl">
+      <div className="auth-surface bg-white rounded-t-3xl animate-slide-up">
         <div className="card p-4">
-          <h2 className="h-title mb-3">Login</h2>
+          <h2 className="text-xl font-semibold text-sol-gray-dark mb-3">Login</h2>
 
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg animate-fade-in">
               <p className="text-red-600 text-sm">❌ {error}</p>
             </div>
           )}
@@ -163,24 +165,25 @@ export default function LoginPage() {
             </Field>
 
             <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 text-sm">
+              <label className="flex items-center gap-2 text-sm sol-text-primary">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-black focus:ring-black-500"
+                  className="h-4 w-4 rounded border-neutral-300 text-sol-orange focus:ring-sol-orange"
                   {...register("remember")}
                 />
                 Manter conectado
               </label>
               <Link
                 href="/auth/forgot-password"
-                className="text-sm underline hover:text-[#F8B075]"
+                className="text-sm underline hover:text-sol-orange transition-colors"
               >
                 Esqueci minha senha
               </Link>
             </div>
 
             <Button
-              className="w-full bg-[#F8B075] "
+              variant="default"
+              className="w-full"
               type="submit"
               disabled={loading}
             >
@@ -189,11 +192,10 @@ export default function LoginPage() {
           </form>
         </div>
 
-        {/* CTA inferior (card outline) */}
-        <div className="mt-4 rounded-2xl border border-black-500 p-4 text-center">
-          <p className="text-sm text-muted">Não tem uma conta?</p>
+        <div className="mt-4 rounded-xl border border-neutral-200 p-4 text-center animate-fade-in">
+          <p className="text-sm sol-text-secondary">Não tem uma conta?</p>
           <Link
-            className="mt-1 inline-block font-semibold text-black"
+            className="mt-1 inline-block font-semibold text-sol-orange hover:text-primary-600 transition-colors"
             href="/auth/register"
           >
             Cadastre-se

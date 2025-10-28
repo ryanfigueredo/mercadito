@@ -5,28 +5,28 @@ import { ArrowRight } from "lucide-react";
 const banners = [
   {
     id: 1,
-    color: "bg-gradient-to-br from-[#F8B075] to-[#e69a66]",
+    color: "bg-gradient-to-br from-sol-orange to-primary-600",
     title: "Essenciais",
     subtitle: "Produtos básicos do dia a dia",
     category: "Grãos",
   },
   {
     id: 2,
-    color: "bg-gradient-to-br from-[#4ade80] to-[#22c55e]",
+    color: "bg-gradient-to-br from-sol-yellow to-accent-500",
     title: "Hortifruti",
     subtitle: "Frutas e verduras fresquinhas",
     category: "Hortifruti",
   },
   {
     id: 3,
-    color: "bg-gradient-to-br from-[#60a5fa] to-[#3b82f6]",
+    color: "bg-gradient-to-br from-primary-400 to-primary-600",
     title: "Bebidas",
     subtitle: "Refrescantes e saborosas",
     category: "Bebidas",
   },
   {
     id: 4,
-    color: "bg-gradient-to-br from-[#a78bfa] to-[#8b5cf6]",
+    color: "bg-gradient-to-br from-accent-400 to-accent-600",
     title: "Limpeza",
     subtitle: "Casa sempre limpa",
     category: "Limpeza",
@@ -101,8 +101,8 @@ export default function FeaturedCarousel() {
             onClick={() => goToSlide(i)}
             className={`h-2 rounded-full transition-all duration-300 ${
               i === index
-                ? "bg-[#F8B075] w-6 scale-110"
-                : "bg-gray-300 w-2 hover:bg-gray-400"
+                ? "bg-sol-orange w-6 scale-110"
+                : "bg-neutral-300 w-2 hover:bg-neutral-400"
             }`}
             aria-label={`Ir para banner ${i + 1}`}
           />

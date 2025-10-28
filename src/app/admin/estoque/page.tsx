@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { getSecureImageUrl } from "@/lib/image-utils";
-import { Check, X, AlertTriangle } from "lucide-react";
+import { updateStockInAMC } from "@/lib/amc-integration";
 
 type Product = {
   id: string;
@@ -97,6 +97,24 @@ export default function EstoquePage() {
         setProducts((prev) =>
           prev.map((p) => (p.id === productId ? { ...p, stock: newStock } : p))
         );
+
+        // Enviar atualização para AMCSistema
+        const product = products.find((p) => p.id === productId);
+        if (product) {
+          try {
+            await updateStockInAMC(
+              product.slug,
+              newStock,
+              "atualizacao_manual"
+            );
+            console.log(
+              `✅ Estoque do produto ${product.slug} atualizado na AMC`
+            );
+          } catch (amcError) {
+            console.error(`❌ Erro ao atualizar estoque na AMC:`, amcError);
+            // Não falhar a operação por erro na AMC
+          }
+        }
       }
     } catch (error) {
       console.error("Erro ao atualizar estoque:", error);

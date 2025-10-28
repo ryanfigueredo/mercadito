@@ -109,7 +109,7 @@ class ApiClient {
   async createPixPayment(
     data: CreatePixPaymentDTO
   ): Promise<PaymentResponseDTO> {
-    return this.request<PaymentResponseDTO>("/checkout/pagarme-pix", {
+    return this.request<PaymentResponseDTO>("/checkout/mercadopago-pix", {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -118,7 +118,7 @@ class ApiClient {
   async createCreditPayment(
     data: CreateCreditPaymentDTO
   ): Promise<PaymentResponseDTO> {
-    return this.request<PaymentResponseDTO>("/checkout/pagarme-credit", {
+    return this.request<PaymentResponseDTO>("/checkout/mercadopago-credit", {
       method: "POST",
       body: JSON.stringify(data),
     });

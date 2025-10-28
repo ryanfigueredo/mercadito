@@ -27,7 +27,7 @@ function CartFabContent() {
   return (
     <Button
       onClick={handleCheckout}
-      className="fixed bottom-16  rounded-none z-40 text-sm w-full bg-[#e6e6e6] text-black "
+      className="fixed bottom-20 rounded-none z-40 text-sm w-full bg-sol-gray-light text-sol-gray-dark hover:bg-sol-orange hover:text-white transition-all duration-200"
     >
       Ver carrinho | R${total.toFixed(2)}
     </Button>

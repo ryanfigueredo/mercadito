@@ -1,52 +1,184 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-/* Tailwind v4 core is imported above; avoid extra plugins to ensure build */
 
+/* Tema SOL_ORIENTE_POP - Base */
 html,
 body {
   height: 100%;
+  font-family: "Poppins", system-ui, sans-serif;
 }
+
 body {
-  background: #fafafa;
-  color: var(--text);
+  background: #ffffff; /* Fundo principal branco */
+  color: #333333; /* Texto principal em cinza escuro */
+  line-height: 1.6;
+}
+
+/* Variáveis CSS para o tema */
+:root {
+  --sol-orange: #d75413;
+  --sol-yellow: #e7c200;
+  --sol-gray-light: #f8f8f8;
+  --sol-gray-dark: #333333;
+  --sol-gray-medium: #666666;
+  --sol-white: #ffffff;
 }
 
 @layer components {
+  .sol-header {
+    @apply bg-sol-orange text-white shadow-sol-elevated;
+  }
+  
+  .sol-button-primary {
+    @apply bg-sol-orange text-white border-none rounded-lg px-6 py-3 font-medium;
+    @apply shadow-sol-button hover:bg-primary-600 transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-sol-orange focus:ring-opacity-50;
+  }
+  
+  .sol-button-secondary {
+    @apply bg-transparent text-sol-orange border border-sol-orange rounded-lg px-6 py-3 font-medium;
+    @apply hover:bg-sol-orange hover:text-white transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-sol-orange focus:ring-opacity-50;
+  }
+  
+  .sol-button-accent {
+    @apply bg-sol-yellow text-sol-gray-dark border-none rounded-lg px-6 py-3 font-medium;
+    @apply shadow-sol-button hover:bg-accent-500 transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-sol-yellow focus:ring-opacity-50;
+  }
+  
+  .sol-card {
+    @apply bg-white rounded-xl shadow-card border border-neutral-200;
+    @apply hover:shadow-sol-elevated transition-shadow duration-200;
+  }
+  
+  .sol-input {
+    @apply border border-neutral-200 rounded-lg px-4 py-3 text-sol-gray-dark;
+    @apply focus:border-sol-orange focus:ring-2 focus:ring-sol-orange focus:ring-opacity-20;
+    @apply transition-all duration-200 placeholder:text-neutral-400;
+  }
+  
+  .sol-title-primary {
+    @apply text-sol-gray-dark font-bold text-2xl;
+  }
+  
+  .sol-title-secondary {
+    @apply text-sol-orange font-semibold text-xl;
+  }
+  
+  .sol-title-accent {
+    @apply text-sol-gray-dark font-semibold text-lg;
+  }
+  
+  .sol-text-primary {
+    @apply text-sol-gray-dark;
+  }
+  
+  .sol-text-secondary {
+    @apply text-sol-gray-medium;
+  }
+  
+  .sol-text-accent {
+    @apply text-sol-orange font-medium;
+  }
+  
+  .sol-badge-primary {
+    @apply bg-sol-orange text-white px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .sol-badge-accent {
+    @apply bg-sol-yellow text-sol-gray-dark px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .sol-badge-neutral {
+    @apply bg-sol-gray-light text-sol-gray-dark px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .sol-indicator-active {
+    @apply border-b-4 border-sol-yellow;
+  }
+  
+  .sol-indicator-primary {
+    @apply border-b-4 border-sol-orange;
+  }
+  
+  .sol-fade-in {
+    @apply animate-fade-in;
+  }
+  
+  .sol-slide-up {
+    @apply animate-slide-up;
+  }
+  
+  .sol-bounce-subtle {
+    @apply animate-bounce-subtle;
+  }
+  
+  .sol-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .sol-section {
+    @apply py-12;
+  }
+  
+  .sol-grid {
+    @apply grid gap-6;
+  }
+  
   .auth-hero {
     @apply h-56 flex items-end;
   }
+  
   .auth-wrap {
     @apply mx-auto max-w-sm px-4 pb-10 w-full;
   }
+  
   .auth-surface {
     @apply mx-auto max-w-sm px-4 pb-10 -mt-10;
   }
+  
   .h-title {
-    @apply text-xl font-semibold text-black;
+    @apply text-xl font-semibold text-sol-gray-dark;
   }
+  
   .sep {
     @apply flex items-center gap-2 my-2;
   }
+  
   .sep-line {
-    @apply h-px bg-accent-500 flex-1;
+    @apply h-px bg-sol-orange flex-1;
   }
+  
   .sep-text {
-    @apply text-xs text-muted;
+    @apply text-xs text-sol-gray-medium;
   }
+  
   .container-auth {
     @apply mx-auto max-w-sm px-4 pb-10;
   }
+  
   .card {
-    @apply bg-card rounded-2xl shadow-sm;
+    @apply sol-card;
   }
+  
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+  
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  
+  .sol-glow {
+    box-shadow: 0 0 20px rgba(215, 84, 19, 0.3);
+  }
+  
+  .sol-glow-yellow {
+    box-shadow: 0 0 20px rgba(231, 194, 0, 0.3);
+  }
 }
-
-/* strip unused design tokens to avoid confusion in v4 */

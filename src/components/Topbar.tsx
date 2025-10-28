@@ -11,7 +11,7 @@ export default function Topbar({
   isLogged?: boolean;
 }) {
   return (
-    <header className="sticky top-0 z-20 bg-[#ff7f16] backdrop-blur bg-[#ff7f16]/60">
+    <header className="sticky top-0 z-20 sol-header backdrop-blur bg-sol-orange/95">
       <div className="mx-auto max-w-sm px-4 py-3 flex items-center gap-3">
         <Link href="/" className="shrink-0" aria-label="Mercadito">
           <Image
@@ -20,6 +20,7 @@ export default function Topbar({
             width={120}
             height={24}
             priority
+            className="filter brightness-0 invert"
           />
         </Link>
         <NotificationBell />

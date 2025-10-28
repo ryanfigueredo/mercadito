@@ -13,13 +13,15 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div
         className={cn(
-          "relative flex items-center rounded-2xl border bg-white",
-          isInvalid ? "border-red-500" : "border-gray-300",
+          "relative flex items-center rounded-lg border bg-white transition-all duration-200",
+          isInvalid
+            ? "border-error focus-within:border-error focus-within:ring-2 focus-within:ring-error focus-within:ring-opacity-20"
+            : "border-neutral-200 focus-within:border-sol-orange focus-within:ring-2 focus-within:ring-sol-orange focus-within:ring-opacity-20",
           className
         )}
       >
         {left && (
-          <span className="pl-3 text-muted" aria-hidden>
+          <span className="pl-3 text-sol-gray-medium" aria-hidden>
             {left}
           </span>
         )}
@@ -28,14 +30,14 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           id={id}
           aria-invalid={isInvalid || undefined}
           className={cn(
-            "h-11 w-full bg-transparent outline-none placeholder:text-muted rounded-2xl",
+            "h-11 w-full bg-transparent outline-none text-sol-gray-dark placeholder:text-neutral-400 rounded-lg",
             left ? "pl-2" : "pl-3",
             right ? "pr-9" : "pr-3"
           )}
           {...props}
         />
         {right && (
-          <span className="absolute right-3 text-muted" aria-hidden>
+          <span className="absolute right-3 text-sol-gray-medium" aria-hidden>
             {right}
           </span>
         )}

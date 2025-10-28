@@ -17,8 +17,8 @@ model User {
   name                  String
   email                 String         @unique
   password              String
-  document              String?        @unique // CPF/CNPJ para Pagar.me
-  phone                 String?        // Telefone para Pagar.me
+  document              String?        @unique // CPF/CNPJ para pagamentos
+  phone                 String?        // Telefone para pagamentos
   isAdmin               Boolean        @default(false) // Permissão para acessar área admin
   passwordResetToken    String?        // Token para reset de senha
   passwordResetExpires  DateTime?      // Expiração do token de reset
@@ -77,9 +77,11 @@ model Order {
   totalCents      Int
   shippingCents   Int          @default(2000) // Valor do frete em centavos (R$ 20,00)
   items           OrderItem[]
-  paymentMethod   String?      // 'pagarme_pix', 'pagarme_credit', 'delivery'
-  pagarmeOrderId  String?      // ID do pedido no Pagar.me
-  pagarmeChargeId String?      // ID da cobrança no Pagar.me
+  paymentMethod   String?      // 'mercadopago_pix', 'mercadopago_credit', 'delivery'
+  pagarmeOrderId  String?      // ID do pedido no Pagar.me (legacy)
+  pagarmeChargeId String?      // ID da cobrança no Pagar.me (legacy)
+  mercadopagoPreferenceId String? // ID da preferência no Mercado Pago
+  mercadopagoPaymentId String?    // ID do pagamento no Mercado Pago
   pixQrCode       String?      // QR Code PIX
   pixQrCodeUrl    String?      // URL do QR Code PIX
   
