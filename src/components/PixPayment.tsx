@@ -104,13 +104,14 @@ export default function PixPayment({
         throw new Error(errorMessage);
       }
 
-      if (!data.checkoutUrl) {
-        console.error("❌ URL de checkout não foi gerada");
-        throw new Error("URL de checkout não foi gerada");
+      if (!data.pixQrCode && !data.pixQrCodeUrl) {
+        console.error("❌ QR Code não foi gerado");
+        throw new Error("QR Code PIX não foi gerado");
       }
 
-      console.log("✅ Checkout URL gerada com sucesso!");
-      console.log("🔗 Checkout URL:", data.checkoutUrl);
+      console.log("✅ QR Code gerado com sucesso!");
+      console.log("🔗 QR Code URL:", data.pixQrCodeUrl);
+      console.log("📝 QR Code Text:", data.pixQrCode);
 
       setPixData(data);
       setCheckingPayment(true);
@@ -158,37 +159,76 @@ export default function PixPayment({
 
   if (pixData) {
     return (
-      <div className="space-y-3 animate-fade-in">
+      <div className="space-y-4 animate-fade-in">
         <div className="text-center">
-          <p className="sol-text-secondary">Complete o pagamento PIX abaixo</p>
-        </div>
-
-        <div className="border rounded-lg overflow-hidden shadow-card">
-          <iframe
-            src={pixData.checkoutUrl}
-            width="100%"
-            height="600"
-            frameBorder="0"
-            className="w-full"
-            title="Checkout PIX Mercado Pago"
-          />
-        </div>
-
-        <div className="text-center text-sm sol-text-secondary">
-          <p>Valor: R$ {pixData.total.toFixed(2)}</p>
-          <p>
-            Expira em: {Math.floor((pixData.expiresIn || 3600) / 60)} minutos
+          <p className="sol-text-secondary text-lg font-medium">
+            Escaneie o QR Code ou copie o código PIX
           </p>
         </div>
 
+        {/* QR Code Image */}
+        {pixData.pixQrCodeUrl ? (
+          <div className="flex justify-center p-4 bg-white rounded-lg border-2 border-gray-200 shadow-lg">
+            <img
+              src={pixData.pixQrCodeUrl}
+              alt="QR Code PIX"
+              className="w-64 h-64 rounded-lg"
+            />
+          </div>
+        ) : (
+          <div className="text-center p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-yellow-700 text-sm">QR Code não disponível</p>
+            <p className="text-yellow-600 text-xs mt-1">
+              Aguarde alguns instantes ou tente novamente
+            </p>
+          </div>
+        )}
+
+        {/* Copy PIX Code Button */}
+        {pixData.pixQrCode && (
+          <div className="space-y-2">
+            <Button
+              variant="secondary"
+              size="lg"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(pixData.pixQrCode || "");
+                  alert("✅ Código PIX copiado! Cole no seu app do banco.");
+                } catch (error) {
+                  console.error("Erro ao copiar:", error);
+                  // Fallback: mostrar o código para copiar manualmente
+                  alert(`Copie este código: ${pixData.pixQrCode}`);
+                }
+              }}
+              className="w-full bg-sol-orange hover:bg-sol-orange-dark text-white font-semibold py-3"
+            >
+              📋 Copiar Código PIX
+            </Button>
+            <p className="sol-text-secondary text-xs text-center">
+              Cole este código no app do seu banco para pagar
+            </p>
+          </div>
+        )}
+
+        {/* Order Info */}
+        <div className="bg-gray-50 rounded-lg p-4 text-center space-y-2">
+          <p className="text-gray-700 font-semibold">
+            Valor: <span className="text-sol-orange">R$ {pixData.total.toFixed(2)}</span>
+          </p>
+          <p className="text-gray-600 text-sm">
+            Expira em: {Math.floor((pixData.expiresIn || 1800) / 60)} minutos
+          </p>
+        </div>
+
+        {/* Payment Status */}
         {checkingPayment && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center animate-pulse-gentle">
-            <div className="animate-spin w-5 h-5 border-2 border-sol-orange border-t-transparent rounded-full mx-auto mb-2"></div>
-            <p className="text-blue-700 text-sm">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+            <div className="animate-spin w-6 h-6 border-3 border-sol-orange border-t-transparent rounded-full mx-auto mb-3"></div>
+            <p className="text-blue-700 font-medium text-sm">
               Aguardando confirmação do pagamento...
             </p>
-            <p className="text-blue-600 text-xs mt-1">
-              Complete o pagamento PIX e aguarde alguns instantes
+            <p className="text-blue-600 text-xs mt-2">
+              Pague o PIX e aguarde alguns instantes. Você será redirecionado automaticamente.
             </p>
           </div>
         )}
@@ -202,7 +242,7 @@ export default function PixPayment({
         <h3 className="sol-title-secondary mb-2">Pagamento PIX</h3>
         <p className="sol-text-secondary">
           {loading
-            ? "Carregando checkout PIX..."
+            ? "Gerando QR Code PIX..."
             : "Pague instantaneamente com PIX"}
         </p>
       </div>

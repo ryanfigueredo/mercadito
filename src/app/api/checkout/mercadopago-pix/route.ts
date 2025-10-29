@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getMercadoPagoClient } from "@/lib/mercadopago";
+import { MercadoPagoConfig, Payment } from "mercadopago";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -156,59 +156,70 @@ export async function POST(req: NextRequest) {
     const areaCode = phone.substring(0, 2);
     const number = phone.substring(2);
 
-    // Criar preferência no Mercado Pago seguindo a documentação oficial
-    const mercadoPagoClient = getMercadoPagoClient();
+    // Criar cliente Mercado Pago
+    const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: "MERCADOPAGO_ACCESS_TOKEN não configurada" },
+        { status: 500 }
+      );
+    }
 
-    const preferenceData = {
-      items: mercadoPagoItems,
-      payer: {
-        name: user.name,
-        email: user.email,
-        identification: {
-          type: "CPF",
-          number: user.document.replace(/\D/g, ""),
-        },
-        phone: phone
-          ? {
-              area_code: areaCode,
-              number: number,
-            }
-          : undefined,
-      },
-      payment_methods: {
-        excluded_payment_methods: [],
-        excluded_payment_types: [{ id: "credit_card" }, { id: "debit_card" }],
-        installments: 1, // PIX sempre à vista
-      },
-      back_urls: {
-        success: `https://www.seumercadito.com.br/checkout/success`,
-        failure: `https://www.seumercadito.com.br/checkout/failure`,
-        pending: `https://www.seumercadito.com.br/checkout/pending`,
-      },
-      auto_return: "approved",
-      notification_url: `https://www.seumercadito.com.br/api/checkout/mercadopago-webhook`,
-      external_reference: order.id, // Referência externa para sincronização
-    };
-
-    const preference = await mercadoPagoClient.createPreference(preferenceData);
-
-    // Atualizar pedido com ID da preferência
-    await prisma.order.update({
-      where: { id: order.id },
-      data: {
-        mercadopagoPreferenceId: preference.id,
-        mercadopagoPaymentId: null,
+    const client = new MercadoPagoConfig({
+      accessToken: accessToken,
+      options: {
+        timeout: 5000,
+        idempotencyKey: order.id, // Evita duplicatas usando o ID do pedido
       },
     });
 
+    const payment = new Payment(client);
+
+    // Criar pagamento PIX direto seguindo a estrutura correta
+    const paymentData = {
+      transaction_amount: totalAmount, // Valor em reais (ex: 5.38)
+      description: `Pedido ${order.id}`,
+      payment_method_id: "pix",
+      payer: {
+        email: user.email,
+        first_name: user.name.split(" ")[0],
+        last_name: user.name.split(" ").slice(1).join(" ") || "",
+        identification: {
+          type: "CPF",
+          number: user.document.replace(/\D/g, ""), // CPF apenas números
+        },
+      },
+      external_reference: order.id, // ID da order no seu sistema
+      notification_url: `https://www.seumercadito.com.br/api/checkout/mercadopago-webhook`,
+    };
+
+    const createdPayment = await payment.create({ body: paymentData });
+
+    // Atualizar pedido com ID do pagamento
+    await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        mercadopagoPaymentId: createdPayment.id,
+        mercadopagoPreferenceId: null,
+      },
+    });
+
+    // Extrair QR Code da resposta
+    const qrCodeBase64 =
+      createdPayment.point_of_interaction?.transaction_data?.qr_code_base64;
+    const qrCodeText =
+      createdPayment.point_of_interaction?.transaction_data?.qr_code;
+
     return NextResponse.json({
       orderId: order.id,
-      preferenceId: preference.id,
-      initPoint: preference.init_point,
-      sandboxInitPoint: preference.sandbox_init_point,
-      total: totalAmount, // Valor em reais
-      expiresIn: 3600, // 1 hora
-      checkoutUrl: preference.init_point, // URL para redirecionar o usuário
+      paymentId: createdPayment.id,
+      pixQrCode: qrCodeText, // Código EMV (copia e cola)
+      pixQrCodeUrl: qrCodeBase64
+        ? `data:image/jpeg;base64,${qrCodeBase64}`
+        : null, // Imagem QR Code em base64
+      total: totalAmount,
+      expiresIn: 1800, // 30 minutos (padrão PIX)
+      status: createdPayment.status,
     });
   } catch (error: unknown) {
     console.error("Erro no checkout PIX Mercado Pago:", error);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getMercadoPagoClient } from "@/lib/mercadopago";
+import { MercadoPagoConfig, Payment } from "mercadopago";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -84,37 +84,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Preparar itens e calcular total
-    let itemsTotalCents = 0;
-    const mercadoPagoItems = items.map((item, index) => {
-      const amount = Math.round(item.price * 100);
+    // Preparar itens e calcular total (valores em reais)
+    let itemsTotalAmount = 0;
+    items.forEach((item) => {
+      const amount = item.price; // Valor em reais
       const quantity = item.quantity || 1;
-      itemsTotalCents += amount * quantity;
-
-      return {
-        id: item.id || `item_${index + 1}`,
-        title: item.name,
-        description: item.name,
-        quantity,
-        unit_price: amount,
-        currency_id: "BRL",
-      };
+      itemsTotalAmount += amount * quantity;
     });
 
-    const freightCents = shippingInfo?.rateCents || 0;
-    const totalCents = itemsTotalCents + freightCents;
-
-    // Adicionar frete como item separado (apenas se > 0)
-    if (freightCents > 0) {
-      mercadoPagoItems.push({
-        id: "frete",
-        title: "Frete",
-        description: "Frete",
-        quantity: 1,
-        unit_price: freightCents,
-        currency_id: "BRL",
-      });
-    }
+    const freightAmount = (shippingInfo?.rateCents || 0) / 100; // Converter centavos para reais
+    const totalAmount = itemsTotalAmount + freightAmount;
 
     // Buscar produtos no banco usando os slugs do carrinho
     const productSlugs = items.map((item) => item.id);
@@ -153,8 +132,8 @@ export async function POST(req: NextRequest) {
       data: {
         userId: user.id,
         status: "PENDING",
-        totalCents,
-        shippingCents: freightCents,
+        totalCents: Math.round(totalAmount * 100), // Converter para centavos para o banco
+        shippingCents: Math.round(freightAmount * 100), // Converter para centavos para o banco
         paymentMethod: "mercadopago_credit",
         deliveryAddress: deliveryAddress.street,
         deliveryCity: deliveryAddress.city,
@@ -166,7 +145,7 @@ export async function POST(req: NextRequest) {
             return {
               productId: dbProduct.id,
               quantity: item.quantity || 1,
-              unitPriceCents: Math.round(item.price * 100),
+              unitPriceCents: Math.round(item.price * 100), // Converter para centavos
             };
           }),
         },
