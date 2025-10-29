@@ -141,7 +141,7 @@ export default function CreditCardPayment({
         throw new Error(errorMessage);
       }
 
-      // Verificar status do Pagar.me
+      // Verificar status do pagamento
       const charge = data.charges?.[0];
       if (charge) {
         if (charge.status === "paid" || charge.status === "approved") {

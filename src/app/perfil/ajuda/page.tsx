@@ -177,7 +177,7 @@ export default async function AjudaPage() {
                 </summary>
                 <p className="text-muted mt-2 text-sm">
                   Sim! O PIX é uma das formas mais seguras de pagamento.
-                  Utilizamos criptografia SSL e processamento via Pagar.me,
+                  Utilizamos criptografia SSL e processamento via Mercado Pago,
                   líder em pagamentos no Brasil.
                 </p>
               </details>
