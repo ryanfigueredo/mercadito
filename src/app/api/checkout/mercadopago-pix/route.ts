@@ -205,11 +205,14 @@ export async function POST(req: NextRequest) {
       orderId: order.id,
       preferenceId: preference.id,
       initPoint: preference.init_point,
-      pixQrCode: preference.point_of_interaction?.transaction_data?.qr_code,
-      pixQrCodeUrl:
-        preference.point_of_interaction?.transaction_data?.qr_code_base64,
+      sandboxInitPoint: preference.sandbox_init_point,
+      // Para Checkout Pro, não temos QR Code na preferência
+      // O QR Code será gerado quando o usuário acessar o init_point
+      pixQrCode: null,
+      pixQrCodeUrl: null,
       total: totalCents / 100,
       expiresIn: 3600, // 1 hora
+      checkoutUrl: preference.init_point, // URL para redirecionar o usuário
     });
   } catch (error: unknown) {
     console.error("Erro no checkout PIX Mercado Pago:", error);

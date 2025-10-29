@@ -104,18 +104,16 @@ export default function PixPayment({
         throw new Error(errorMessage);
       }
 
-      if (!data.pixQrCode) {
-        console.error("❌ QR Code não foi gerado");
-        throw new Error("QR Code PIX não foi gerado");
+      if (!data.checkoutUrl) {
+        console.error("❌ URL de checkout não foi gerada");
+        throw new Error("URL de checkout não foi gerada");
       }
 
-      console.log("✅ QR Code gerado com sucesso!");
-      console.log("🔗 QR Code URL:", data.pixQrCodeUrl);
-      console.log("📝 QR Code:", data.pixQrCode);
+      console.log("✅ Checkout URL gerada com sucesso!");
+      console.log("🔗 Checkout URL:", data.checkoutUrl);
 
-      setPixData(data);
-      // NÃO chama onSuccess aqui - aguarda o webhook confirmar o pagamento
-      setCheckingPayment(true);
+      // Redirecionar para o checkout do Mercado Pago
+      window.location.href = data.checkoutUrl;
     } catch (error: unknown) {
       console.error("❌ Erro completo:", error);
       onError(
@@ -158,70 +156,8 @@ export default function PixPayment({
     return () => clearInterval(interval);
   }, [checkingPayment, pixData]);
 
-  if (pixData) {
-    return (
-      <div className="space-y-3 animate-fade-in">
-        <div className="text-center">
-          <p className="sol-text-secondary">
-            Escaneie o QR Code ou copie o código PIX
-          </p>
-        </div>
-
-        {pixData.pixQrCodeUrl ? (
-          <div className="flex justify-center">
-            <img
-              src={pixData.pixQrCodeUrl}
-              alt="QR Code PIX"
-              className="w-48 h-48 border rounded-lg shadow-card animate-scale-in"
-            />
-          </div>
-        ) : (
-          <div className="text-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p className="text-yellow-700 text-sm">QR Code não disponível</p>
-            <p className="text-yellow-600 text-xs">
-              Aguarde alguns instantes ou tente novamente
-            </p>
-          </div>
-        )}
-
-        <div className="space-y-2 text-center">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => {
-              navigator.clipboard.writeText(pixData.pixQrCode || "");
-              alert("Código PIX copiado! Cole no seu app do banco.");
-            }}
-            className="w-full"
-          >
-            Copiar Código PIX
-          </Button>
-          <p className="sol-text-secondary text-xs">
-            Cole este código no app do seu banco para pagar
-          </p>
-        </div>
-
-        <div className="text-center text-sm sol-text-secondary">
-          <p>Valor: R$ {pixData.total.toFixed(2)}</p>
-          <p>
-            Expira em: {Math.floor((pixData.expiresIn || 3600) / 60)} minutos
-          </p>
-        </div>
-
-        {checkingPayment && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center animate-pulse-gentle">
-            <div className="animate-spin w-5 h-5 border-2 border-sol-orange border-t-transparent rounded-full mx-auto mb-2"></div>
-            <p className="text-blue-700 text-sm">
-              Aguardando confirmação do pagamento...
-            </p>
-            <p className="text-blue-600 text-xs mt-1">
-              Pague o PIX e aguarde alguns instantes
-            </p>
-          </div>
-        )}
-      </div>
-    );
-  }
+  // Para Checkout Pro, não mostramos QR Code aqui
+  // O usuário será redirecionado para o checkout do Mercado Pago
 
   return (
     <div className="space-y-4">
@@ -229,7 +165,7 @@ export default function PixPayment({
         <h3 className="sol-title-secondary mb-2">Pagamento PIX</h3>
         <p className="sol-text-secondary">
           {loading
-            ? "Gerando pagamento PIX..."
+            ? "Redirecionando para o checkout PIX..."
             : "Pague instantaneamente com PIX"}
         </p>
       </div>
@@ -238,6 +174,15 @@ export default function PixPayment({
         <div className="flex justify-center">
           <div className="animate-spin w-8 h-8 border-2 border-sol-orange border-t-transparent rounded-full"></div>
         </div>
+      )}
+
+      {!loading && (
+        <Button
+          onClick={handlePixPayment}
+          className="w-full bg-sol-orange hover:bg-sol-orange-dark text-white"
+        >
+          Pagar com PIX
+        </Button>
       )}
     </div>
   );
