@@ -131,8 +131,8 @@ export async function POST(req: NextRequest) {
       data: {
         userId: user.id,
         status: "PENDING",
-        totalCents,
-        shippingCents: freightCents,
+        totalCents: Math.round(totalAmount * 100), // Converter para centavos para o banco
+        shippingCents: Math.round(freightAmount * 100), // Converter para centavos para o banco
         paymentMethod: "mercadopago_pix",
         deliveryAddress: deliveryAddress.street,
         deliveryCity: deliveryAddress.city,
