@@ -112,8 +112,8 @@ export default function PixPayment({
       console.log("✅ Checkout URL gerada com sucesso!");
       console.log("🔗 Checkout URL:", data.checkoutUrl);
 
-      // Redirecionar para o checkout do Mercado Pago
-      window.location.href = data.checkoutUrl;
+      setPixData(data);
+      setCheckingPayment(true);
     } catch (error: unknown) {
       console.error("❌ Erro completo:", error);
       onError(
@@ -156,8 +156,45 @@ export default function PixPayment({
     return () => clearInterval(interval);
   }, [checkingPayment, pixData]);
 
-  // Para Checkout Pro, não mostramos QR Code aqui
-  // O usuário será redirecionado para o checkout do Mercado Pago
+  if (pixData) {
+    return (
+      <div className="space-y-3 animate-fade-in">
+        <div className="text-center">
+          <p className="sol-text-secondary">Complete o pagamento PIX abaixo</p>
+        </div>
+
+        <div className="border rounded-lg overflow-hidden shadow-card">
+          <iframe
+            src={pixData.checkoutUrl}
+            width="100%"
+            height="600"
+            frameBorder="0"
+            className="w-full"
+            title="Checkout PIX Mercado Pago"
+          />
+        </div>
+
+        <div className="text-center text-sm sol-text-secondary">
+          <p>Valor: R$ {pixData.total.toFixed(2)}</p>
+          <p>
+            Expira em: {Math.floor((pixData.expiresIn || 3600) / 60)} minutos
+          </p>
+        </div>
+
+        {checkingPayment && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center animate-pulse-gentle">
+            <div className="animate-spin w-5 h-5 border-2 border-sol-orange border-t-transparent rounded-full mx-auto mb-2"></div>
+            <p className="text-blue-700 text-sm">
+              Aguardando confirmação do pagamento...
+            </p>
+            <p className="text-blue-600 text-xs mt-1">
+              Complete o pagamento PIX e aguarde alguns instantes
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -165,7 +202,7 @@ export default function PixPayment({
         <h3 className="sol-title-secondary mb-2">Pagamento PIX</h3>
         <p className="sol-text-secondary">
           {loading
-            ? "Redirecionando para o checkout PIX..."
+            ? "Carregando checkout PIX..."
             : "Pague instantaneamente com PIX"}
         </p>
       </div>
@@ -181,7 +218,7 @@ export default function PixPayment({
           onClick={handlePixPayment}
           className="w-full bg-sol-orange hover:bg-sol-orange-dark text-white"
         >
-          Pagar com PIX
+          Abrir Checkout PIX
         </Button>
       )}
     </div>

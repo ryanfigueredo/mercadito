@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     // Preparar itens e calcular total
     let itemsTotalCents = 0;
     const mercadoPagoItems = items.map((item, index) => {
-      const amount = Math.round(item.price * 100); // converter para centavos
+      const amount = item.price; // Valor em reais (não converter para centavos)
       const quantity = item.quantity || 1;
       itemsTotalCents += amount * quantity;
 
@@ -74,22 +74,22 @@ export async function POST(req: NextRequest) {
         title: item.name,
         description: item.name,
         quantity,
-        unit_price: amount,
+        unit_price: amount, // Valor em reais
         currency_id: "BRL",
       };
     });
 
-    const freightCents = shippingInfo?.rateCents || 0;
-    const totalCents = itemsTotalCents + freightCents;
+    const freightAmount = (shippingInfo?.rateCents || 0) / 100; // Converter centavos para reais
+    const totalAmount = itemsTotalCents + freightAmount;
 
     // Adicionar frete como item separado (apenas se > 0)
-    if (freightCents > 0) {
+    if (freightAmount > 0) {
       mercadoPagoItems.push({
         id: "frete",
         title: "Frete",
         description: "Frete",
         quantity: 1,
-        unit_price: freightCents,
+        unit_price: freightAmount,
         currency_id: "BRL",
       });
     }
@@ -206,11 +206,7 @@ export async function POST(req: NextRequest) {
       preferenceId: preference.id,
       initPoint: preference.init_point,
       sandboxInitPoint: preference.sandbox_init_point,
-      // Para Checkout Pro, não temos QR Code na preferência
-      // O QR Code será gerado quando o usuário acessar o init_point
-      pixQrCode: null,
-      pixQrCodeUrl: null,
-      total: totalCents / 100,
+      total: totalAmount, // Valor em reais
       expiresIn: 3600, // 1 hora
       checkoutUrl: preference.init_point, // URL para redirecionar o usuário
     });
