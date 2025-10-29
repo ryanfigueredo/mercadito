@@ -15,6 +15,28 @@ export async function POST(req: NextRequest) {
     console.log(`🔔 Webhook recebido:`);
     console.log(`   Body: ${body}`);
 
+    // Verificar assinatura secreta (se configurada)
+    const signature = req.headers.get("x-mercadopago-signature");
+    const webhookSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
+
+    if (webhookSecret && signature) {
+      const isValidSignature = verifyWebhookSignature(
+        body,
+        signature,
+        webhookSecret
+      );
+      if (!isValidSignature) {
+        console.log(`❌ Assinatura inválida - possível ataque`);
+        return NextResponse.json(
+          { error: "Assinatura inválida" },
+          { status: 401 }
+        );
+      }
+      console.log(`✅ Assinatura válida`);
+    } else if (webhookSecret) {
+      console.log(`⚠️ Assinatura esperada mas não recebida`);
+    }
+
     const event = JSON.parse(body);
 
     console.log(`   Evento:`, event);
@@ -247,5 +269,31 @@ async function handlePaymentRefunded(order: any, payment: any) {
     console.log(`Pedido ${order.id} estornado`);
   } catch (error) {
     console.error("Erro ao processar estorno:", error);
+  }
+}
+
+// Função para verificar assinatura do webhook
+function verifyWebhookSignature(
+  body: string,
+  signature: string,
+  secret: string
+): boolean {
+  try {
+    const crypto = require("crypto");
+
+    // O Mercado Pago usa HMAC-SHA256
+    const expectedSignature = crypto
+      .createHmac("sha256", secret)
+      .update(body)
+      .digest("hex");
+
+    // Comparar assinaturas de forma segura
+    return crypto.timingSafeEqual(
+      Buffer.from(signature, "hex"),
+      Buffer.from(expectedSignature, "hex")
+    );
+  } catch (error) {
+    console.error("Erro ao verificar assinatura:", error);
+    return false;
   }
 }
