@@ -62,37 +62,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Preparar itens e calcular total
-    let itemsTotalCents = 0;
-    const mercadoPagoItems = items.map((item, index) => {
-      const amount = item.price; // Valor em reais (não converter para centavos)
+    // Calcular total em reais
+    let itemsTotalAmount = 0;
+    items.forEach((item) => {
+      const amount = item.price; // Valor em reais
       const quantity = item.quantity || 1;
-      itemsTotalCents += amount * quantity;
-
-      return {
-        id: item.id || `item_${index + 1}`,
-        title: item.name,
-        description: item.name,
-        quantity,
-        unit_price: amount, // Valor em reais
-        currency_id: "BRL",
-      };
+      itemsTotalAmount += amount * quantity;
     });
 
     const freightAmount = (shippingInfo?.rateCents || 0) / 100; // Converter centavos para reais
-    const totalAmount = itemsTotalCents + freightAmount;
-
-    // Adicionar frete como item separado (apenas se > 0)
-    if (freightAmount > 0) {
-      mercadoPagoItems.push({
-        id: "frete",
-        title: "Frete",
-        description: "Frete",
-        quantity: 1,
-        unit_price: freightAmount,
-        currency_id: "BRL",
-      });
-    }
+    const totalAmount = itemsTotalAmount + freightAmount;
 
     // Buscar produtos no banco usando os slugs do carrinho
     const productSlugs = items.map((item) => item.id);
@@ -156,7 +135,7 @@ export async function POST(req: NextRequest) {
     const areaCode = phone.substring(0, 2);
     const number = phone.substring(2);
 
-    // Criar cliente Mercado Pago
+    // Criar cliente Mercado Pago para Checkout Transparente
     const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
     if (!accessToken) {
       return NextResponse.json(
@@ -175,7 +154,7 @@ export async function POST(req: NextRequest) {
 
     const payment = new Payment(client);
 
-    // Criar pagamento PIX direto seguindo a estrutura correta
+    // Criar pagamento PIX usando Checkout Transparente (API de Pagamentos)
     const paymentData = {
       transaction_amount: totalAmount, // Valor em reais (ex: 5.38)
       description: `Pedido ${order.id}`,
@@ -193,34 +172,66 @@ export async function POST(req: NextRequest) {
       notification_url: `https://www.seumercadito.com.br/api/checkout/mercadopago-webhook`,
     };
 
-    const createdPayment = await payment.create({ body: paymentData });
+    try {
+      const createdPayment = await payment.create({ body: paymentData });
 
-    // Atualizar pedido com ID do pagamento
-    await prisma.order.update({
-      where: { id: order.id },
-      data: {
-        mercadopagoPaymentId: createdPayment.id,
-        mercadopagoPreferenceId: null,
-      },
-    });
+      // Atualizar pedido com ID do pagamento
+      await prisma.order.update({
+        where: { id: order.id },
+        data: {
+          mercadopagoPaymentId: createdPayment.id,
+          mercadopagoPreferenceId: null,
+        },
+      });
 
-    // Extrair QR Code da resposta
-    const qrCodeBase64 =
-      createdPayment.point_of_interaction?.transaction_data?.qr_code_base64;
-    const qrCodeText =
-      createdPayment.point_of_interaction?.transaction_data?.qr_code;
+      // Extrair QR Code da resposta
+      const qrCodeBase64 =
+        createdPayment.point_of_interaction?.transaction_data?.qr_code_base64;
+      const qrCodeText =
+        createdPayment.point_of_interaction?.transaction_data?.qr_code;
 
-    return NextResponse.json({
-      orderId: order.id,
-      paymentId: createdPayment.id,
-      pixQrCode: qrCodeText, // Código EMV (copia e cola)
-      pixQrCodeUrl: qrCodeBase64
-        ? `data:image/jpeg;base64,${qrCodeBase64}`
-        : null, // Imagem QR Code em base64
-      total: totalAmount,
-      expiresIn: 1800, // 30 minutos (padrão PIX)
-      status: createdPayment.status,
-    });
+      if (!qrCodeText && !qrCodeBase64) {
+        console.error("QR Code não retornado pelo Mercado Pago");
+        return NextResponse.json(
+          {
+            error: "PIX_NOT_ENABLED",
+            message:
+              "Chave PIX não habilitada na conta. Entre em contato com o suporte do Mercado Pago para habilitar.",
+          },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json({
+        orderId: order.id,
+        paymentId: createdPayment.id,
+        pixQrCode: qrCodeText, // Código EMV (copia e cola)
+        pixQrCodeUrl: qrCodeBase64
+          ? `data:image/jpeg;base64,${qrCodeBase64}`
+          : null, // Imagem QR Code em base64
+        total: totalAmount,
+        expiresIn: 1800, // 30 minutos (padrão PIX)
+        status: createdPayment.status,
+      });
+    } catch (error: any) {
+      // Tratamento específico para erro de PIX não habilitado
+      if (
+        error?.message?.includes("Collector user without key enabled") ||
+        error?.error === "bad_request"
+      ) {
+        return NextResponse.json(
+          {
+            error: "PIX_NOT_ENABLED",
+            message:
+              "Chave PIX não habilitada na conta do Mercado Pago. É necessário habilitar a chave PIX nas configurações da conta para usar Checkout Transparente.",
+            details:
+              "Acesse https://www.mercadopago.com.br/developers e habilite a chave PIX nas configurações da sua conta.",
+          },
+          { status: 400 }
+        );
+      }
+      throw error; // Re-throw outros erros
+    }
   } catch (error: unknown) {
     console.error("Erro no checkout PIX Mercado Pago:", error);
     return NextResponse.json(

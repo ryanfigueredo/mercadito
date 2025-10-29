@@ -104,6 +104,13 @@ export default function PixPayment({
         throw new Error(errorMessage);
       }
 
+      // Verificar se é erro de PIX não habilitado
+      if (data.error === "PIX_NOT_ENABLED") {
+        const errorMsg = `${data.message}\n\n${data.details || ""}`;
+        onError(errorMsg);
+        return;
+      }
+
       if (!data.pixQrCode && !data.pixQrCodeUrl) {
         console.error("❌ QR Code não foi gerado");
         throw new Error("QR Code PIX não foi gerado");
@@ -166,13 +173,13 @@ export default function PixPayment({
           </p>
         </div>
 
-        {/* QR Code Image */}
+        {/* QR Code Image - Direto na página */}
         {pixData.pixQrCodeUrl ? (
-          <div className="flex justify-center p-4 bg-white rounded-lg border-2 border-gray-200 shadow-lg">
+          <div className="flex justify-center p-6 bg-white rounded-xl border-2 border-gray-200 shadow-lg">
             <img
               src={pixData.pixQrCodeUrl}
               alt="QR Code PIX"
-              className="w-64 h-64 rounded-lg"
+              className="w-72 h-72 rounded-lg"
             />
           </div>
         ) : (
