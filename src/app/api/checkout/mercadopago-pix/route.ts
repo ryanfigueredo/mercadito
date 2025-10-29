@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
     const areaCode = phone.substring(0, 2);
     const number = phone.substring(2);
 
-    // Criar preferência no Mercado Pago
+    // Criar preferência no Mercado Pago seguindo a documentação oficial
     const mercadoPagoClient = getMercadoPagoClient();
 
     const preferenceData = {
@@ -178,14 +178,16 @@ export async function POST(req: NextRequest) {
       payment_methods: {
         excluded_payment_methods: [],
         excluded_payment_types: [{ id: "credit_card" }, { id: "debit_card" }],
+        installments: 1, // PIX sempre à vista
       },
       back_urls: {
-        success: `${process.env.NEXTAUTH_URL}/checkout/success`,
-        failure: `${process.env.NEXTAUTH_URL}/checkout/failure`,
-        pending: `${process.env.NEXTAUTH_URL}/checkout/pending`,
+        success: `https://www.seumercadito.com.br/checkout/success`,
+        failure: `https://www.seumercadito.com.br/checkout/failure`,
+        pending: `https://www.seumercadito.com.br/checkout/pending`,
       },
       auto_return: "approved",
-      notification_url: `${process.env.NEXTAUTH_URL}/api/checkout/mercadopago-webhook`,
+      notification_url: `https://www.seumercadito.com.br/api/checkout/mercadopago-webhook`,
+      external_reference: order.id, // Referência externa para sincronização
     };
 
     const preference = await mercadoPagoClient.createPreference(preferenceData);

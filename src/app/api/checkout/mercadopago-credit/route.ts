@@ -178,7 +178,7 @@ export async function POST(req: NextRequest) {
     const areaCode = phone.substring(0, 2);
     const number = phone.substring(2);
 
-    // Criar pagamento no Mercado Pago
+    // Criar pagamento no Mercado Pago seguindo a documentação oficial
     const mercadoPagoClient = getMercadoPagoClient();
 
     const paymentData = {
@@ -203,6 +203,7 @@ export async function POST(req: NextRequest) {
       installments: cardData.installments,
       token: cardData.number.replace(/\s/g, ""),
       issuer_id: undefined,
+      external_reference: order.id, // Referência externa para sincronização
     };
 
     const payment = await mercadoPagoClient.createPayment(paymentData);

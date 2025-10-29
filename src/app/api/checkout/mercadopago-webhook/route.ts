@@ -73,19 +73,30 @@ export async function POST(req: NextRequest) {
 
 async function handlePaymentEvent(paymentId: string, action: string) {
   try {
-    // Buscar pedido pelo ID do pagamento
-    const order = await prisma.order.findFirst({
-      where: { mercadopagoPaymentId: paymentId },
-    });
+    // Buscar detalhes do pagamento no Mercado Pago primeiro
+    const mercadoPagoClient = getMercadoPagoClient();
+    const payment = await mercadoPagoClient.getPayment(paymentId);
+
+    // Buscar pedido pelo external_reference (mais confiável) ou pelo ID do pagamento
+    let order = null;
+
+    if (payment.external_reference) {
+      order = await prisma.order.findUnique({
+        where: { id: payment.external_reference },
+      });
+    }
+
+    // Fallback: buscar pelo ID do pagamento se external_reference não funcionar
+    if (!order) {
+      order = await prisma.order.findFirst({
+        where: { mercadopagoPaymentId: paymentId },
+      });
+    }
 
     if (!order) {
       console.log(`Pedido não encontrado para pagamento ${paymentId}`);
       return;
     }
-
-    // Buscar detalhes do pagamento no Mercado Pago
-    const mercadoPagoClient = getMercadoPagoClient();
-    const payment = await mercadoPagoClient.getPayment(paymentId);
 
     switch (action) {
       case "payment.created":
