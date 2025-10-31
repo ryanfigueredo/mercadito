@@ -175,11 +175,11 @@ export async function POST(req: NextRequest) {
     try {
       const createdPayment = await payment.create({ body: paymentData });
 
-      // Atualizar pedido com ID do pagamento
+      // Atualizar pedido com ID do pagamento (converter para string)
       await prisma.order.update({
         where: { id: order.id },
         data: {
-          mercadopagoPaymentId: createdPayment.id,
+          mercadopagoPaymentId: String(createdPayment.id), // Converter para string
           mercadopagoPreferenceId: null,
         },
       });
@@ -204,7 +204,7 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({
         orderId: order.id,
-        paymentId: createdPayment.id,
+        paymentId: String(createdPayment.id), // Converter para string
         pixQrCode: qrCodeText, // Código EMV (copia e cola)
         pixQrCodeUrl: qrCodeBase64
           ? `data:image/jpeg;base64,${qrCodeBase64}`

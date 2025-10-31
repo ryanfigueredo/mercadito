@@ -191,7 +191,7 @@ export async function POST(req: NextRequest) {
     await prisma.order.update({
       where: { id: order.id },
       data: {
-        mercadopagoPaymentId: payment.id,
+        mercadopagoPaymentId: String(payment.id), // Converter para string
         mercadopagoPreferenceId: null,
       },
     });
