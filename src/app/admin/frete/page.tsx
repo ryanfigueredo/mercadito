@@ -16,11 +16,13 @@ interface StoreConfig {
   lng: number;
   city: string;
   state: string;
+  address?: string;
+  zipCode?: string;
 }
 
 export default function FreteConfigPage() {
   const [storeConfig, setStoreConfig] = useState<StoreConfig>({
-    lat: -12.2387, // R. Primavera, 1246 - Sobradinho
+    lat: -12.2387,
     lng: -38.9753,
     city: "Feira de Santana",
     state: "BA",
@@ -37,7 +39,40 @@ export default function FreteConfigPage() {
   ]);
 
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Carregar configuração ao montar o componente
+  useEffect(() => {
+    loadConfig();
+  }, []);
+
+  const loadConfig = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/admin/shipping-config");
+      if (response.ok) {
+        const config = await response.json();
+        setStoreConfig({
+          lat: config.storeLat || -12.2387,
+          lng: config.storeLng || -38.9753,
+          city: config.storeCity || "Feira de Santana",
+          state: config.storeState || "BA",
+          address: config.storeAddress,
+          zipCode: config.storeZipCode,
+        });
+        if (config.shippingRates && Array.isArray(config.shippingRates)) {
+          setShippingRates(config.shippingRates);
+        }
+      }
+    } catch (err) {
+      console.error("Erro ao carregar configuração:", err);
+      setError("Erro ao carregar configuração");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addShippingRate = () => {
     setShippingRates([...shippingRates, { maxDistance: 0, rate: 0 }]);
@@ -64,20 +99,50 @@ export default function FreteConfigPage() {
   };
 
   const handleSave = async () => {
-    setLoading(true);
+    setSaving(true);
+    setError(null);
     try {
-      // Aqui você salvaria no banco de dados ou arquivo de configuração
-      // Por enquanto, vamos simular o salvamento
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch("/api/admin/shipping-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          storeLat: storeConfig.lat,
+          storeLng: storeConfig.lng,
+          storeCity: storeConfig.city,
+          storeState: storeConfig.state,
+          storeAddress: storeConfig.address,
+          storeZipCode: storeConfig.zipCode,
+          shippingRates: shippingRates,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Erro ao salvar");
+      }
 
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch (error) {
-      console.error("Erro ao salvar configurações:", error);
+    } catch (err) {
+      console.error("Erro ao salvar configurações:", err);
+      setError(
+        err instanceof Error ? err.message : "Erro ao salvar configurações"
+      );
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando configurações...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -96,6 +161,12 @@ export default function FreteConfigPage() {
             </p>
           </div>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            {error}
+          </div>
+        )}
 
         {/* Configuração da Loja */}
         <Card>
@@ -154,6 +225,26 @@ export default function FreteConfigPage() {
                   value={storeConfig.state}
                   onChange={(e) =>
                     setStoreConfig({ ...storeConfig, state: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="storeAddress">Endereço (opcional)</Label>
+                <Input
+                  id="storeAddress"
+                  value={storeConfig.address || ""}
+                  onChange={(e) =>
+                    setStoreConfig({ ...storeConfig, address: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="storeZipCode">CEP (opcional)</Label>
+                <Input
+                  id="storeZipCode"
+                  value={storeConfig.zipCode || ""}
+                  onChange={(e) =>
+                    setStoreConfig({ ...storeConfig, zipCode: e.target.value })
                   }
                 />
               </div>
@@ -309,11 +400,11 @@ export default function FreteConfigPage() {
         <div className="flex justify-end">
           <Button
             onClick={handleSave}
-            disabled={loading}
+            disabled={saving}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
           >
             <Save className="w-4 h-4" />
-            {loading
+            {saving
               ? "Salvando..."
               : saved
               ? "Salvo!"

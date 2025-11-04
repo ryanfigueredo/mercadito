@@ -6,7 +6,6 @@ import {
   notifyPaymentFailed,
   notifyOrderConfirmed,
 } from "@/lib/notifications";
-import { sendSaleToAMC } from "@/app/api/integration/amc/send-sale/route";
 
 export async function POST(req: NextRequest) {
   try {
@@ -216,15 +215,6 @@ async function handlePaymentApproved(order: any, payment: any) {
       order.totalCents + order.shippingCents
     );
     await notifyOrderConfirmed(order.userId, order.id, order.id);
-
-    // Enviar venda para AMCSistema
-    try {
-      await sendSaleToAMC(order.id);
-      console.log(`✅ Venda ${order.id} enviada para AMCSistema`);
-    } catch (amcError) {
-      console.error(`❌ Erro ao enviar venda ${order.id} para AMC:`, amcError);
-      // Não falhar o webhook por erro na AMC
-    }
   } catch (error) {
     console.error("Erro ao processar pagamento aprovado:", error);
   }

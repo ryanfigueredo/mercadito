@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 // Coordenadas da loja - R. Primavera, 1246 - Sobradinho, Feira de Santana/BA
 const STORE_COORDINATES = {
@@ -33,6 +34,52 @@ interface ViaCEPResponse {
   ddd: string;
   siafi: string;
   erro?: boolean;
+}
+
+// Função para obter configuração de frete do banco
+async function getShippingConfig() {
+  try {
+    const config = await prisma.shippingConfig.findFirst({
+      where: { isActive: true },
+      orderBy: { updatedAt: "desc" },
+    });
+
+    if (config) {
+      return {
+        storeLat: config.storeLat,
+        storeLng: config.storeLng,
+        storeCity: config.storeCity,
+        storeState: config.storeState,
+        storeAddress: config.storeAddress,
+        storeZipCode: config.storeZipCode,
+        shippingRates: config.shippingRates as Array<{
+          maxDistance: number;
+          rate: number;
+        }>,
+      };
+    }
+  } catch (error) {
+    console.error("Erro ao buscar configuração de frete:", error);
+  }
+
+  // Fallback para valores padrão
+  return {
+    storeLat: parseFloat(process.env.STORE_LATITUDE || "-12.2387"),
+    storeLng: parseFloat(process.env.STORE_LONGITUDE || "-38.9753"),
+    storeCity: process.env.STORE_CITY || "Feira de Santana",
+    storeState: process.env.STORE_STATE || "BA",
+    storeAddress: process.env.STORE_ADDRESS || "R. Primavera, 1246 - Sobradinho",
+    storeZipCode: process.env.STORE_ZIP_CODE || "44031-090",
+    shippingRates: [
+      { maxDistance: 5, rate: 0 },
+      { maxDistance: 10, rate: 800 },
+      { maxDistance: 20, rate: 1200 },
+      { maxDistance: 50, rate: 2000 },
+      { maxDistance: 100, rate: 3500 },
+      { maxDistance: 200, rate: 5000 },
+      { maxDistance: 999999, rate: 8000 },
+    ],
+  };
 }
 
 // Função para calcular distância entre duas coordenadas (Haversine)
@@ -153,13 +200,16 @@ async function getCoordinatesFromCEP(
 }
 
 // Função para calcular frete baseado na distância
-function calculateShippingRate(distanceKm: number): number {
-  for (const rate of SHIPPING_RATES) {
+function calculateShippingRate(
+  distanceKm: number,
+  shippingRates: Array<{ maxDistance: number; rate: number }>
+): number {
+  for (const rate of shippingRates) {
     if (distanceKm <= rate.maxDistance) {
       return rate.rate;
     }
   }
-  return SHIPPING_RATES[SHIPPING_RATES.length - 1].rate;
+  return shippingRates[shippingRates.length - 1]?.rate || 2000;
 }
 
 export async function POST(req: NextRequest) {
@@ -169,6 +219,9 @@ export async function POST(req: NextRequest) {
     if (!zipCode) {
       return NextResponse.json({ error: "CEP é obrigatório" }, { status: 400 });
     }
+
+    // Obter configuração do banco
+    const config = await getShippingConfig();
 
     // Limpar CEP (remover traços e espaços)
     const cleanZipCode = zipCode.replace(/\D/g, "");
@@ -186,7 +239,7 @@ export async function POST(req: NextRequest) {
     if (!destinationCoords) {
       // Se não conseguir obter coordenadas, usar frete padrão baseado no estado
       const isSameState =
-        state?.toUpperCase() === STORE_COORDINATES.state.toUpperCase();
+        state?.toUpperCase() === config.storeState.toUpperCase();
       const defaultRate = isSameState ? 1500 : 2500; // R$ 15,00 ou R$ 25,00
 
       return NextResponse.json({
@@ -197,8 +250,8 @@ export async function POST(req: NextRequest) {
           distanceKm: 0, // Distância desconhecida
           estimatedDays: isSameState ? 2 : 5,
           origin: {
-            city: STORE_COORDINATES.city,
-            state: STORE_COORDINATES.state,
+            city: config.storeCity,
+            state: config.storeState,
           },
           destination: {
             zipCode: cleanZipCode,
@@ -212,14 +265,17 @@ export async function POST(req: NextRequest) {
 
     // Calcular distância
     const distance = calculateDistance(
-      STORE_COORDINATES.lat,
-      STORE_COORDINATES.lng,
+      config.storeLat,
+      config.storeLng,
       destinationCoords.lat,
       destinationCoords.lng
     );
 
-    // Calcular frete
-    const shippingRateCents = calculateShippingRate(distance);
+    // Calcular frete usando a tabela do banco
+    const shippingRateCents = calculateShippingRate(
+      distance,
+      config.shippingRates
+    );
     const shippingRateReais = shippingRateCents / 100;
 
     // Determinar prazo de entrega baseado na distância
@@ -238,8 +294,8 @@ export async function POST(req: NextRequest) {
         distanceKm: Math.round(distance * 10) / 10, // Arredondar para 1 casa decimal
         estimatedDays,
         origin: {
-          city: STORE_COORDINATES.city,
-          state: STORE_COORDINATES.state,
+          city: config.storeCity,
+          state: config.storeState,
         },
         destination: {
           zipCode: cleanZipCode,

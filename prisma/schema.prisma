@@ -139,3 +139,20 @@ enum NotificationType {
   GENERAL             // Geral
 }
 
+model ShippingConfig {
+  id                  String   @id @default(cuid())
+  storeLat            Float    @default(-12.2387)
+  storeLng            Float    @default(-38.9753)
+  storeCity           String   @default("Feira de Santana")
+  storeState          String   @default("BA")
+  storeAddress        String?
+  storeZipCode        String?
+  shippingRates       Json     // Array de { maxDistance: number, rate: number }
+  isActive            Boolean  @default(true)
+  updatedBy           String?  // Email do admin que atualizou
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("ShippingConfig")
+}
+

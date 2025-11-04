@@ -9,6 +9,7 @@ const bodySchema = z.object({
   price: z.number().positive(),
   imageUrl: z.string().url().optional(),
   promoText: z.string().optional(),
+  stock: z.number().int().min(0).optional(),
 });
 
 export async function GET() {
@@ -38,6 +39,7 @@ export async function POST(req: NextRequest) {
         priceCents: Math.round(p.price * 100),
         imageUrl: p.imageUrl,
         promoText: p.promoText,
+        stock: p.stock ?? 0, // Estoque inicia em 0 se não informado
       },
       update: {
         name: p.name,
@@ -45,6 +47,7 @@ export async function POST(req: NextRequest) {
         priceCents: Math.round(p.price * 100),
         imageUrl: p.imageUrl,
         promoText: p.promoText,
+        stock: p.stock !== undefined ? p.stock : undefined, // Só atualiza se fornecido
       },
     });
     return NextResponse.json(created, { status: 201 });

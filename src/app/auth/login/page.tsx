@@ -119,9 +119,11 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <div className="auth-surface bg-white rounded-t-3xl animate-slide-up">
-        <div className="card p-4">
-          <h2 className="text-xl font-semibold text-sol-gray-dark mb-3">Login</h2>
+      <div className="auth-surface bg-white mt-2 rounded-t-3xl animate-slide-up">
+        <div className="card  p-4">
+          <h2 className="text-xl font-semibold text-sol-gray-dark mb-3">
+            Login
+          </h2>
 
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg animate-fade-in">

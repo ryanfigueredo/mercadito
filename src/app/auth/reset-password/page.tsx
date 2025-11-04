@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { LockIcon, EyeIcon, EyeOffIcon } from "@/components/ui/icons";
+import { CheckCircle, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 function ResetPasswordForm() {
@@ -78,7 +79,7 @@ function ResetPasswordForm() {
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <div className="text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <div className="text-3xl">✅</div>
+                <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
 
               <h1 className="text-2xl font-bold text-gray-900 mb-3">

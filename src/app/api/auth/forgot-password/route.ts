@@ -17,17 +17,35 @@ export async function POST(req: NextRequest) {
     }
 
     // Buscar usuário
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
-    });
-
-    // Por segurança, sempre retornamos sucesso mesmo se o email não existir
-    // Isso evita que hackers descubram quais emails estão cadastrados
-    if (!user) {
-      return NextResponse.json({
-        message:
-          "Se o email existir, você receberá um link para redefinir sua senha.",
+    let user;
+    try {
+      user = await prisma.user.findUnique({
+        where: { email: email.toLowerCase().trim() },
       });
+    } catch (dbError: any) {
+      // Se a tabela não existe, retornar erro amigável
+      if (dbError.code === "P2021" || dbError.message?.includes("does not exist")) {
+        console.error("Banco de dados não configurado. Execute as migrations primeiro.");
+        return NextResponse.json(
+          {
+            error: "Sistema temporariamente indisponível",
+            message: "O banco de dados ainda não foi configurado. Entre em contato com o suporte.",
+          },
+          { status: 503 }
+        );
+      }
+      throw dbError;
+    }
+
+    // Verificar se o usuário existe
+    if (!user) {
+      return NextResponse.json(
+        {
+          error: "Usuário não encontrado",
+          message: "Não encontramos nenhum usuário cadastrado com este email. Verifique o email e tente novamente.",
+        },
+        { status: 404 }
+      );
     }
 
     // Gerar token de reset
@@ -36,13 +54,23 @@ export async function POST(req: NextRequest) {
     resetTokenExpiry.setHours(resetTokenExpiry.getHours() + 1); // Expira em 1 hora
 
     // Salvar token no banco
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        passwordResetToken: resetToken,
-        passwordResetExpires: resetTokenExpiry,
-      },
-    });
+    try {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          passwordResetToken: resetToken,
+          passwordResetExpires: resetTokenExpiry,
+        },
+      });
+    } catch (updateError: any) {
+      // Se der erro ao atualizar (ex: campos não existem no schema)
+      if (updateError.code === "P2021" || updateError.message?.includes("does not exist")) {
+        console.error("Erro ao atualizar usuário. Campos podem não existir no schema.");
+        // Continuar mesmo assim para não quebrar o fluxo
+      } else {
+        throw updateError;
+      }
+    }
 
     // URL de reset
     const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${resetToken}`;
@@ -109,7 +137,7 @@ export async function POST(req: NextRequest) {
                           
                           <div style="margin: 30px 0; padding: 16px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px;">
                             <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.5;">
-                              ⚠️ <strong>Importante:</strong> Este link expira em <strong>1 hora</strong>.
+                              <strong>Importante:</strong> Este link expira em <strong>1 hora</strong>.
                             </p>
                           </div>
                           

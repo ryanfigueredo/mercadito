@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { MailIcon } from "@/components/ui/icons";
+import { CheckCircle, Lightbulb } from "lucide-react";
 import Link from "next/link";
 
 export default function ForgotPasswordPage() {
@@ -23,11 +24,13 @@ export default function ForgotPasswordPage() {
         body: JSON.stringify({ email }),
       });
 
+      const data = await res.json();
+      
       if (res.ok) {
         setSuccess(true);
       } else {
-        const data = await res.json();
-        setError(data.error || "Erro ao enviar email");
+        // Exibir mensagem de erro (pode ser error ou message)
+        setError(data.message || data.error || "Erro ao enviar email");
       }
     } catch (err) {
       setError("Erro de conexão. Tente novamente.");
@@ -43,7 +46,7 @@ export default function ForgotPasswordPage() {
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <div className="text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <div className="text-3xl">✅</div>
+                <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
 
               <h1 className="text-2xl font-bold text-gray-900 mb-3">
@@ -51,14 +54,17 @@ export default function ForgotPasswordPage() {
               </h1>
 
               <p className="text-gray-600 mb-6 leading-relaxed">
-                Se o email <strong>{email}</strong> estiver cadastrado, você
-                receberá um link para redefinir sua senha.
+                Enviamos um link de recuperação para <strong>{email}</strong>.
+                Verifique sua caixa de entrada e clique no link para redefinir sua senha.
               </p>
 
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-                <p className="text-sm text-blue-900">
-                  💡 <strong>Dica:</strong> Verifique também sua caixa de spam.
-                  O email pode levar alguns minutos para chegar.
+                <p className="text-sm text-blue-900 flex items-start gap-2">
+                  <Lightbulb className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <span>
+                    <strong>Dica:</strong> Verifique também sua caixa de spam.
+                    O email pode levar alguns minutos para chegar.
+                  </span>
                 </p>
               </div>
 
@@ -140,16 +146,7 @@ export default function ForgotPasswordPage() {
             </div>
           </form>
 
-          {/* Info */}
-          <div className="mt-6 pt-6 border-t">
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-xs text-gray-600 leading-relaxed">
-                🔒 <strong>Segurança:</strong> O link de recuperação expira em 1
-                hora. Por segurança, não informamos se o email existe em nossa
-                base.
-              </p>
-            </div>
-          </div>
+
         </div>
       </div>
     </div>
