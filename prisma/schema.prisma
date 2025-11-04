@@ -22,12 +22,24 @@ model User {
   isAdmin               Boolean        @default(false) // Permissão para acessar área admin
   passwordResetToken    String?        // Token para reset de senha
   passwordResetExpires  DateTime?      // Expiração do token de reset
+  emailVerified         Boolean        @default(false) // Email verificado
   addresses             Address[]
   orders                Order[]
   cards                 SavedCard[]    // Cartões salvos
   notifications         Notification[] // Notificações do usuário
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  code      String   // Código de verificação (6 dígitos)
+  expiresAt DateTime // Expiração do código (15 minutos)
+  attempts  Int      @default(0) // Tentativas de verificação
+  verified  Boolean  @default(false) // Email verificado
+  verifiedAt DateTime? // Quando foi verificado
+  createdAt DateTime @default(now())
 }
 
 model Address {

@@ -29,15 +29,42 @@ export async function POST(req: NextRequest) {
 
     // Validar dados
     const validatedData = registerSchema.parse(body);
+    const normalizedEmail = validatedData.email.toLowerCase().trim();
 
     // Verificar se email já existe
     const existingUser = await prisma.user.findUnique({
-      where: { email: validatedData.email },
+      where: { email: normalizedEmail },
     });
 
     if (existingUser) {
       return NextResponse.json(
         { error: "Este e-mail já está em uso" },
+        { status: 400 }
+      );
+    }
+
+    // Verificar se o email foi verificado
+    const emailVerification = await prisma.emailVerification.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    if (!emailVerification || !emailVerification.verified) {
+      return NextResponse.json(
+        { error: "Por favor, verifique seu email antes de criar a conta" },
+        { status: 400 }
+      );
+    }
+
+    // Verificar se a verificação ainda é válida (não expirou)
+    if (new Date() > emailVerification.expiresAt) {
+      await prisma.emailVerification.delete({
+        where: { email: normalizedEmail },
+      });
+      return NextResponse.json(
+        {
+          error:
+            "Verificação de email expirada. Por favor, solicite um novo código.",
+        },
         { status: 400 }
       );
     }
@@ -61,12 +88,22 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.create({
       data: {
         name: `${validatedData.firstName} ${validatedData.lastName}`,
-        email: validatedData.email,
+        email: normalizedEmail,
         document: validatedData.cpf,
         phone: validatedData.phone,
         password: hashedPassword,
+        emailVerified: true, // Email já foi verificado
       },
     });
+
+    // Deletar registro de verificação após criar o usuário
+    await prisma.emailVerification
+      .delete({
+        where: { email: normalizedEmail },
+      })
+      .catch(() => {
+        // Ignorar erro se já foi deletado
+      });
 
     return NextResponse.json({
       success: true,

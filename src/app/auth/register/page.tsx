@@ -11,18 +11,25 @@ import {
   EyeIcon,
   EyeOffIcon,
   UserIcon,
-  AppleIcon,
-  FacebookIcon,
-  GoogleIcon,
+  IdIcon,
 } from "@/components/ui/icons";
-import { IdIcon } from "@/components/ui/icons";
 import { isValidCPF, stripCpfNonDigits } from "@/lib/cpf";
 
-const schema = z
+// Schema para verificação de email
+const emailSchema = z.object({
+  email: z.string().email("E-mail inválido"),
+});
+
+// Schema para código de verificação
+const codeSchema = z.object({
+  code: z.string().length(6, "Código deve ter 6 dígitos"),
+});
+
+// Schema para formulário completo
+const registerSchema = z
   .object({
     firstName: z.string().min(2, "Informe seu nome"),
     lastName: z.string().min(2, "Informe seu sobrenome"),
-    email: z.string().email("E-mail inválido"),
     cpf: z
       .string()
       .transform((v) => stripCpfNonDigits(v))
@@ -36,7 +43,10 @@ const schema = z
     message: "As senhas não coincidem",
     path: ["confirm"],
   });
-type FormData = z.infer<typeof schema>;
+
+type EmailData = z.infer<typeof emailSchema>;
+type CodeData = z.infer<typeof codeSchema>;
+type RegisterData = z.infer<typeof registerSchema>;
 
 function Field({
   label,
@@ -87,19 +97,94 @@ function TextInput(
 }
 
 export default function RegisterPage() {
+  // Estados para controle do fluxo
+  const [step, setStep] = useState<"email" | "code" | "register">("email");
+  const [verifiedEmail, setVerifiedEmail] = useState<string>("");
   const [show1, setShow1] = useState(false);
   const [show2, setShow2] = useState(false);
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
 
-  const onSubmit = async (data: FormData) => {
+  // Form para email
+  const emailForm = useForm<EmailData>({
+    resolver: zodResolver(emailSchema),
+  });
+
+  // Form para código
+  const codeForm = useForm<CodeData>({
+    resolver: zodResolver(codeSchema),
+  });
+
+  // Form para registro
+  const registerForm = useForm<RegisterData>({
+    resolver: zodResolver(registerSchema),
+  });
+
+  // Enviar código de verificação
+  const onSendCode = async (data: EmailData) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/auth/send-verification-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: data.email }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Erro ao enviar código");
+      }
+
+      setVerifiedEmail(data.email.toLowerCase().trim());
+      setCodeSent(true);
+      setStep("code");
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro ao enviar código");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Verificar código
+  const onVerifyCode = async (data: CodeData) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/auth/verify-email-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: verifiedEmail,
+          code: data.code,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Erro ao verificar código");
+      }
+
+      setStep("register");
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro ao verificar código");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Finalizar cadastro
+  const onRegister = async (data: RegisterData) => {
     setLoading(true);
     setError(null);
 
@@ -107,7 +192,10 @@ export default function RegisterPage() {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          email: verifiedEmail,
+        }),
       });
 
       const result = await response.json();
@@ -146,170 +234,325 @@ export default function RegisterPage() {
         <div className="card p-4">
           <h2 className="h-title mb-3">Cadastre-se</h2>
 
+          {/* Indicador de progresso */}
+          <div className="mb-4 flex items-center justify-center gap-2">
+            <div
+              className={`h-2 w-12 rounded-full ${
+                step === "email" ? "bg-primary" : "bg-green-500"
+              }`}
+            />
+            <div
+              className={`h-2 w-12 rounded-full ${
+                step === "code"
+                  ? "bg-primary"
+                  : step === "register"
+                  ? "bg-green-500"
+                  : "bg-gray-300"
+              }`}
+            />
+            <div
+              className={`h-2 w-12 rounded-full ${
+                step === "register" ? "bg-primary" : "bg-gray-300"
+              }`}
+            />
+          </div>
+
           {success && (
             <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
               <p className="text-green-600 text-sm">
-                ✅ Conta criada com sucesso! Redirecionando...
+                {step === "code"
+                  ? "Código enviado! Verifique seu email."
+                  : step === "register"
+                  ? "Email verificado! Complete seu cadastro."
+                  : "Conta criada com sucesso! Redirecionando..."}
               </p>
             </div>
           )}
 
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-600 text-sm">❌ {error}</p>
+              <p className="text-red-600 text-sm">{error}</p>
             </div>
           )}
 
-          <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
-            <Field label="CPF" id="cpf" error={errors.cpf?.message}>
-              <TextInput
-                id="cpf"
-                inputMode="numeric"
-                placeholder="000.000.000-00"
-                left={<IdIcon />}
-                maxLength={14}
-                onInput={(e) => {
-                  const input = e.currentTarget as HTMLInputElement;
-                  const digits = input.value.replace(/\D+/g, "").slice(0, 11);
-                  const masked = digits
-                    .replace(/(\d{3})(\d)/, "$1.$2")
-                    .replace(/(\d{3})(\d)/, "$1.$2")
-                    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-                  setValue("cpf", masked as unknown as string, {
-                    shouldValidate: true,
-                  });
-                  input.value = masked;
-                }}
-                error={!!errors.cpf}
-                aria-invalid={!!errors.cpf}
-                {...register("cpf")}
-              />
-            </Field>
-            <Field
-              label="Nome"
-              id="firstName"
-              error={errors.firstName?.message}
+          {/* Etapa 1: Email */}
+          {step === "email" && (
+            <form
+              className="space-y-3"
+              onSubmit={emailForm.handleSubmit(onSendCode)}
             >
-              <TextInput
-                id="firstName"
-                placeholder="Nome"
-                left={<UserIcon />}
-                error={!!errors.firstName}
-                aria-invalid={!!errors.firstName}
-                {...register("firstName")}
-              />
-            </Field>
-
-            <Field
-              label="Sobrenome"
-              id="lastName"
-              error={errors.lastName?.message}
-            >
-              <TextInput
-                id="lastName"
-                placeholder="Sobrenome"
-                left={<UserIcon />}
-                error={!!errors.lastName}
-                aria-invalid={!!errors.lastName}
-                {...register("lastName")}
-              />
-            </Field>
-
-            <Field label="E-mail" id="email" error={errors.email?.message}>
-              <TextInput
+              <Field
+                label="E-mail"
                 id="email"
-                type="email"
-                placeholder="E-mail"
-                left={<MailIcon />}
-                error={!!errors.email}
-                aria-invalid={!!errors.email}
-                {...register("email")}
-              />
-            </Field>
+                error={emailForm.formState.errors.email?.message}
+              >
+                <TextInput
+                  id="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  left={<MailIcon />}
+                  error={!!emailForm.formState.errors.email}
+                  {...emailForm.register("email")}
+                />
+              </Field>
 
-            <Field label="Telefone" id="phone" error={errors.phone?.message}>
-              <TextInput
-                id="phone"
-                type="tel"
-                placeholder="(11) 99999-9999"
-                left={<span className="text-muted">📱</span>}
-                maxLength={15}
-                onInput={(e) => {
-                  const input = e.currentTarget as HTMLInputElement;
-                  const digits = input.value.replace(/\D+/g, "").slice(0, 11);
-                  const masked = digits
-                    .replace(/(\d{2})(\d)/, "($1) $2")
-                    .replace(/(\d{5})(\d)/, "$1-$2");
-                  setValue("phone", masked as unknown as string, {
-                    shouldValidate: true,
-                  });
-                  input.value = masked;
+              <p className="text-sm text-muted text-center">
+                Enviaremos um código de verificação para este email
+              </p>
+
+              <Button className="w-full" type="submit" disabled={loading}>
+                {loading ? "Enviando..." : "Enviar código"}
+              </Button>
+            </form>
+          )}
+
+          {/* Etapa 2: Código */}
+          {step === "code" && (
+            <form
+              className="space-y-3"
+              onSubmit={codeForm.handleSubmit(onVerifyCode)}
+            >
+              <div className="mb-4 text-center">
+                <p className="text-sm text-muted">
+                  Código enviado para:
+                  <br />
+                  <strong className="text-black">{verifiedEmail}</strong>
+                </p>
+              </div>
+
+              <Field
+                label="Código de verificação"
+                id="code"
+                error={codeForm.formState.errors.code?.message}
+              >
+                <TextInput
+                  id="code"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="000000"
+                  maxLength={6}
+                  className="text-center text-2xl tracking-widest font-mono"
+                  error={!!codeForm.formState.errors.code}
+                  {...codeForm.register("code")}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+                    codeForm.setValue("code", value);
+                  }}
+                />
+              </Field>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setStep("email");
+                  setCodeSent(false);
+                  codeForm.reset();
                 }}
-                error={!!errors.phone}
-                aria-invalid={!!errors.phone}
-                {...register("phone")}
-              />
-            </Field>
+              >
+                Alterar email
+              </Button>
 
-            <Field
-              label="Digite sua senha"
-              id="password"
-              error={errors.password?.message}
+              <Button className="w-full" type="submit" disabled={loading}>
+                {loading ? "Verificando..." : "Verificar código"}
+              </Button>
+
+              {codeSent && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setLoading(true);
+                    setError(null);
+                    try {
+                      const response = await fetch(
+                        "/api/auth/send-verification-code",
+                        {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ email: verifiedEmail }),
+                        }
+                      );
+                      const result = await response.json();
+                      if (!response.ok) {
+                        throw new Error(
+                          result.error || "Erro ao reenviar código"
+                        );
+                      }
+                      setSuccess(true);
+                      setTimeout(() => setSuccess(false), 3000);
+                    } catch (err: unknown) {
+                      setError(
+                        err instanceof Error
+                          ? err.message
+                          : "Erro ao reenviar código"
+                      );
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  className="w-full text-sm text-primary underline"
+                  disabled={loading}
+                >
+                  Reenviar código
+                </button>
+              )}
+            </form>
+          )}
+
+          {/* Etapa 3: Registro completo */}
+          {step === "register" && (
+            <form
+              className="space-y-3"
+              onSubmit={registerForm.handleSubmit(onRegister)}
             >
-              <TextInput
+              <div className="mb-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm text-green-700">
+                  Email verificado: <strong>{verifiedEmail}</strong>
+                </p>
+              </div>
+
+              <Field
+                label="CPF"
+                id="cpf"
+                error={registerForm.formState.errors.cpf?.message}
+              >
+                <TextInput
+                  id="cpf"
+                  inputMode="numeric"
+                  placeholder="000.000.000-00"
+                  left={<IdIcon />}
+                  maxLength={14}
+                  onInput={(e) => {
+                    const input = e.currentTarget as HTMLInputElement;
+                    const digits = input.value.replace(/\D+/g, "").slice(0, 11);
+                    const masked = digits
+                      .replace(/(\d{3})(\d)/, "$1.$2")
+                      .replace(/(\d{3})(\d)/, "$1.$2")
+                      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+                    registerForm.setValue("cpf", masked as any, {
+                      shouldValidate: true,
+                    });
+                    input.value = masked;
+                  }}
+                  error={!!registerForm.formState.errors.cpf}
+                  {...registerForm.register("cpf")}
+                />
+              </Field>
+
+              <Field
+                label="Nome"
+                id="firstName"
+                error={registerForm.formState.errors.firstName?.message}
+              >
+                <TextInput
+                  id="firstName"
+                  placeholder="Nome"
+                  left={<UserIcon />}
+                  error={!!registerForm.formState.errors.firstName}
+                  {...registerForm.register("firstName")}
+                />
+              </Field>
+
+              <Field
+                label="Sobrenome"
+                id="lastName"
+                error={registerForm.formState.errors.lastName?.message}
+              >
+                <TextInput
+                  id="lastName"
+                  placeholder="Sobrenome"
+                  left={<UserIcon />}
+                  error={!!registerForm.formState.errors.lastName}
+                  {...registerForm.register("lastName")}
+                />
+              </Field>
+
+              <Field
+                label="Telefone"
+                id="phone"
+                error={registerForm.formState.errors.phone?.message}
+              >
+                <TextInput
+                  id="phone"
+                  type="tel"
+                  placeholder="(11) 99999-9999"
+                  left={<span className="text-muted">📱</span>}
+                  maxLength={15}
+                  onInput={(e) => {
+                    const input = e.currentTarget as HTMLInputElement;
+                    const digits = input.value.replace(/\D+/g, "").slice(0, 11);
+                    const masked = digits
+                      .replace(/(\d{2})(\d)/, "($1) $2")
+                      .replace(/(\d{5})(\d)/, "$1-$2");
+                    registerForm.setValue("phone", masked as any, {
+                      shouldValidate: true,
+                    });
+                    input.value = masked;
+                  }}
+                  error={!!registerForm.formState.errors.phone}
+                  {...registerForm.register("phone")}
+                />
+              </Field>
+
+              <Field
+                label="Digite sua senha"
                 id="password"
-                type={show1 ? "text" : "password"}
-                placeholder="Digite sua senha"
-                left={<LockIcon />}
-                right={
-                  <button
-                    type="button"
-                    aria-label={show1 ? "Ocultar senha" : "Mostrar senha"}
-                    onClick={() => setShow1((s) => !s)}
-                    className="p-1"
-                  >
-                    {show1 ? <EyeOffIcon /> : <EyeIcon />}
-                  </button>
-                }
-                error={!!errors.password}
-                aria-invalid={!!errors.password}
-                {...register("password")}
-              />
-            </Field>
+                error={registerForm.formState.errors.password?.message}
+              >
+                <TextInput
+                  id="password"
+                  type={show1 ? "text" : "password"}
+                  placeholder="Digite sua senha"
+                  left={<LockIcon />}
+                  right={
+                    <button
+                      type="button"
+                      aria-label={show1 ? "Ocultar senha" : "Mostrar senha"}
+                      onClick={() => setShow1((s) => !s)}
+                      className="p-1"
+                    >
+                      {show1 ? <EyeOffIcon /> : <EyeIcon />}
+                    </button>
+                  }
+                  error={!!registerForm.formState.errors.password}
+                  {...registerForm.register("password")}
+                />
+              </Field>
 
-            <Field
-              label="Repita sua senha"
-              id="confirm"
-              error={errors.confirm?.message}
-            >
-              <TextInput
+              <Field
+                label="Repita sua senha"
                 id="confirm"
-                type={show2 ? "text" : "password"}
-                placeholder="Repita sua senha"
-                left={<LockIcon />}
-                right={
-                  <button
-                    type="button"
-                    aria-label={show2 ? "Ocultar senha" : "Mostrar senha"}
-                    onClick={() => setShow2((s) => !s)}
-                    className="p-1"
-                  >
-                    {show2 ? <EyeOffIcon /> : <EyeIcon />}
-                  </button>
-                }
-                error={!!errors.confirm}
-                aria-invalid={!!errors.confirm}
-                {...register("confirm")}
-              />
-            </Field>
+                error={registerForm.formState.errors.confirm?.message}
+              >
+                <TextInput
+                  id="confirm"
+                  type={show2 ? "text" : "password"}
+                  placeholder="Repita sua senha"
+                  left={<LockIcon />}
+                  right={
+                    <button
+                      type="button"
+                      aria-label={show2 ? "Ocultar senha" : "Mostrar senha"}
+                      onClick={() => setShow2((s) => !s)}
+                      className="p-1"
+                    >
+                      {show2 ? <EyeOffIcon /> : <EyeIcon />}
+                    </button>
+                  }
+                  error={!!registerForm.formState.errors.confirm}
+                  {...registerForm.register("confirm")}
+                />
+              </Field>
 
-            <Button className="w-full" type="submit" disabled={loading}>
-              {loading ? "Criando conta..." : "Criar conta"}
-            </Button>
-          </form>
+              <Button className="w-full" type="submit" disabled={loading}>
+                {loading ? "Criando conta..." : "Criar conta"}
+              </Button>
+            </form>
+          )}
         </div>
 
-        {/* CTA inferior (outline) */}
+        {/* CTA inferior */}
         <div className="mt-4 rounded-2xl border border-black-500 p-4 text-center">
           <p className="text-sm text-muted">Já tem uma conta?</p>
           <Link
