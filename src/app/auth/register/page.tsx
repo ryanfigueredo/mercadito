@@ -476,7 +476,7 @@ export default function RegisterPage() {
                 <TextInput
                   id="phone"
                   type="tel"
-                  placeholder="(11) 99999-9999"
+                  placeholder="(75)99945-6200"
                   left={<span className="text-muted">📱</span>}
                   maxLength={15}
                   onInput={(e) => {

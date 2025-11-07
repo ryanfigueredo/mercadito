@@ -214,7 +214,7 @@ export default async function TermosPage() {
                 <strong>Dúvidas sobre estes termos:</strong>
               </p>
               <p>• Email: contato@mercadito.com.br</p>
-              <p>• WhatsApp: (11) 99999-9999</p>
+              <p>• WhatsApp: (75) 99945-6200</p>
               <p>• Horário: 8h às 18h (segunda a sábado)</p>
             </div>
           </section>
