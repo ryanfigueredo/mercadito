@@ -5,6 +5,7 @@ import BottomNav from "@/components/BottomNav";
 import CartFab from "@/components/CartFab";
 import AuthProvider from "@/components/AuthProvider";
 import CartHydration from "@/components/CartHydration";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +23,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={inter.className}>
+      <body
+        className={cn(
+          inter.className,
+          "min-h-screen bg-white text-neutral-900"
+        )}
+      >
         <AuthProvider>
           <CartHydration />
-          {children}
+          <div className="min-h-screen pb-[calc(96px+env(safe-area-inset-bottom))] md:pb-0">
+            {children}
+          </div>
           <BottomNav />
           <CartFab />
         </AuthProvider>

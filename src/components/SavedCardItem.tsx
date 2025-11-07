@@ -28,10 +28,10 @@ export default function SavedCardItem({
 
   const getBrandIcon = (brand: string) => {
     const brandLower = brand.toLowerCase();
-    if (brandLower.includes("visa")) return "💳";
-    if (brandLower.includes("mastercard")) return "💳";
-    if (brandLower.includes("amex")) return "💳";
-    return "💳";
+    if (brandLower.includes("visa")) return "";
+    if (brandLower.includes("mastercard")) return "";
+    if (brandLower.includes("amex")) return "";
+    return "";
   };
 
   const formatExpiration = (month: number, year: number) => {

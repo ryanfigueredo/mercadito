@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import SavedCardItem from "@/components/SavedCardItem";
 import AddCardForm from "@/components/AddCardForm";
 import { CreditCard, Plus, Shield } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface SavedCard {
   id: string;
@@ -24,6 +25,9 @@ export default function PagamentosPage() {
   const [cards, setCards] = useState<SavedCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [useDeliveryForBilling, setUseDeliveryForBilling] = useState(true);
+  const [billingLoaded, setBillingLoaded] = useState(false);
+  const [savingBillingPreference, setSavingBillingPreference] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -31,6 +35,7 @@ export default function PagamentosPage() {
     }
     if (status === "authenticated") {
       fetchCards();
+      fetchBillingPreference();
     }
   }, [status]);
 
@@ -45,6 +50,24 @@ export default function PagamentosPage() {
       console.error("Erro ao buscar cartões:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBillingPreference = async () => {
+    try {
+      const response = await fetch("/api/user/profile");
+      if (response.ok) {
+        const data = await response.json();
+        setUseDeliveryForBilling(
+          data.useDeliveryForBilling === undefined
+            ? true
+            : data.useDeliveryForBilling
+        );
+      }
+    } catch (error) {
+      console.error("Erro ao carregar preferência de faturamento:", error);
+    } finally {
+      setBillingLoaded(true);
     }
   };
 
@@ -109,6 +132,30 @@ export default function PagamentosPage() {
     fetchCards();
   };
 
+  const handleToggleBillingPreference = async () => {
+    const nextValue = !useDeliveryForBilling;
+    setUseDeliveryForBilling(nextValue);
+    setSavingBillingPreference(true);
+
+    try {
+      const response = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ useDeliveryForBilling: nextValue }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao salvar preferência");
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar preferência de faturamento:", error);
+      setUseDeliveryForBilling(!nextValue);
+      alert("Não foi possível salvar a preferência. Tente novamente.");
+    } finally {
+      setSavingBillingPreference(false);
+    }
+  };
+
   if (status === "loading" || loading) {
     return (
       <div className="min-h-dvh">
@@ -133,6 +180,35 @@ export default function PagamentosPage() {
           </Link>
         </div>
 
+        <section className="mb-6 rounded-2xl border border-gray-200 bg-white p-4">
+          <div className="flex items-start gap-3">
+            <Checkbox
+              checked={useDeliveryForBilling}
+              onChange={handleToggleBillingPreference}
+              aria-label="Usar endereço de entrega para faturamento"
+              disabled={!billingLoaded || savingBillingPreference}
+            />
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-gray-900">
+                Usar endereço da entrega para faturamento
+              </p>
+              <p className="text-xs text-gray-500">
+                Quando essa opção estiver ativa, seus pedidos utilizarão o
+                endereço de entrega como referência para emissão de notas
+                fiscais.
+              </p>
+              {!billingLoaded && (
+                <p className="text-xs text-gray-400">Carregando preferência…</p>
+              )}
+              {savingBillingPreference && (
+                <p className="text-xs text-gray-400">
+                  Salvando preferência...
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+
         {/* Cartões Salvos */}
         <section className="mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -142,11 +218,17 @@ export default function PagamentosPage() {
               className="flex items-center space-x-2 px-3 py-2 bg-[#F8B075] text-white rounded-lg text-sm font-medium hover:bg-[#F8B075]/90 transition-colors"
             >
               <Plus className="w-4 h-4" />
-              <span>Adicionar</span>
+              <span>{showAddForm ? "Fechar" : "Adicionar"}</span>
             </button>
           </div>
 
-          {cards.length === 0 ? (
+          {showAddForm ? (
+            <AddCardForm
+              onCardAdded={handleCardAdded}
+              onCancel={() => setShowAddForm(false)}
+              compact={cards.length > 0}
+            />
+          ) : cards.length === 0 ? (
             <div className="text-center py-8">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CreditCard className="w-8 h-8 text-gray-400" />
@@ -169,14 +251,6 @@ export default function PagamentosPage() {
             </div>
           )}
         </section>
-
-        {/* Formulário de Adicionar Cartão */}
-        {showAddForm && (
-          <AddCardForm
-            onCardAdded={handleCardAdded}
-            onCancel={() => setShowAddForm(false)}
-          />
-        )}
 
         {/* Informações de Segurança */}
         <section className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl">

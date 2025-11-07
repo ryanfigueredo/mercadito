@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useCart } from "@/lib/cart";
 import AddressSelector from "./AddressSelector";
 import type { PaymentData, CardData } from "@/types";
@@ -53,6 +54,7 @@ export default function CreditCardPayment({
   const [installmentOptions, setInstallmentOptions] = useState<
     Array<{ installments: number; amount: number; hasInterest: boolean }>
   >([]);
+  const [useDeliveryForBilling, setUseDeliveryForBilling] = useState(true);
   const items = useCart((s) => s.items);
 
   // Calcular opções de parcelamento com juros
@@ -197,7 +199,19 @@ export default function CreditCardPayment({
 
   // Pré-preencher dados do endereço quando selecionado
   useEffect(() => {
-    if (selectedAddress) {
+    if (useDeliveryForBilling) {
+      setCardData((prev) => ({
+        ...prev,
+        zipCode: deliveryAddress.zip,
+        city: deliveryAddress.city,
+        state: deliveryAddress.state,
+      }));
+      setSelectedAddress(null);
+    }
+  }, [useDeliveryForBilling, deliveryAddress]);
+
+  useEffect(() => {
+    if (!useDeliveryForBilling && selectedAddress) {
       setCardData((prev) => ({
         ...prev,
         zipCode: selectedAddress.zip,
@@ -205,7 +219,7 @@ export default function CreditCardPayment({
         state: selectedAddress.state,
       }));
     }
-  }, [selectedAddress]);
+  }, [selectedAddress, useDeliveryForBilling]);
 
   const formatCardNumber = (value: string) => {
     return value
@@ -291,6 +305,30 @@ export default function CreditCardPayment({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="rounded-lg border border-gray-200 p-3 flex items-start gap-3">
+          <Checkbox
+            checked={useDeliveryForBilling}
+            onChange={() => setUseDeliveryForBilling(!useDeliveryForBilling)}
+            aria-label="Usar endereço de entrega para faturamento"
+          />
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-gray-800">
+              Usar endereço da entrega para faturamento
+            </p>
+            <p className="text-xs text-gray-500">
+              {useDeliveryForBilling
+                ? "Os dados de cobrança serão preenchidos automaticamente com o endereço da entrega."
+                : "Selecione um endereço de cobrança diferente para emitir a nota fiscal."}
+            </p>
+            {useDeliveryForBilling && (
+              <p className="text-xs text-gray-400">
+                {deliveryAddress.street}, {deliveryAddress.city} -{" "}
+                {deliveryAddress.state}
+              </p>
+            )}
+          </div>
+        </div>
+
         <div>
           <Label
             htmlFor="cardNumber"
@@ -412,11 +450,13 @@ export default function CreditCardPayment({
           </select>
         </div>
 
-        <AddressSelector
-          onAddressSelect={setSelectedAddress}
-          onAddressChange={() => setShowAddressSelector(!showAddressSelector)}
-          selectedAddress={selectedAddress}
-        />
+        {!useDeliveryForBilling && (
+          <AddressSelector
+            onAddressSelect={setSelectedAddress}
+            onAddressChange={() => setShowAddressSelector(!showAddressSelector)}
+            selectedAddress={selectedAddress}
+          />
+        )}
 
         <Button
           type="submit"

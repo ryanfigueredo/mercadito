@@ -13,13 +13,11 @@ import {
   BarChart3,
   ChevronRight,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { redirect } from "next/navigation";
 import LogoutButton from "@/components/LogoutButton";
 
-type IconComponent = (props: {
-  size?: number;
-  className?: string;
-}) => React.ReactElement;
+type IconComponent = LucideIcon;
 
 function MenuItem({
   href,

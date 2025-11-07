@@ -38,7 +38,7 @@ export default async function TermosPage() {
           {/* Introdução */}
           <section className="card p-4">
             <h2 className="font-semibold text-lg mb-3">
-              📋 Termos de Uso e Condições Gerais
+              Termos de Uso e Condições Gerais
             </h2>
             <p className="text-sm text-muted mb-3">
               <strong>Última atualização:</strong>{" "}
@@ -213,7 +213,7 @@ export default async function TermosPage() {
               <p>
                 <strong>Dúvidas sobre estes termos:</strong>
               </p>
-              <p>• Email: suporte@mercadito.com.br</p>
+              <p>• Email: contato@mercadito.com.br</p>
               <p>• WhatsApp: (11) 99999-9999</p>
               <p>• Horário: 8h às 18h (segunda a sábado)</p>
             </div>

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import ContactSupportForm from "@/components/ContactSupportForm";
 
 export default async function AjudaPage() {
   const session = await getServerSession(authOptions);
@@ -35,41 +36,13 @@ export default async function AjudaPage() {
         </div>
 
         <section className="card p-4">
-          <h2 className="font-semibold mb-3">💬 Entre em contato</h2>
+          <h2 className="font-semibold mb-3">Entre em contato</h2>
           <p className="text-sm text-muted mb-4">
             Não encontrou sua dúvida? Escreva abaixo e nossa equipe te ajudará
             em até 2 horas.
           </p>
 
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Assunto
-              </label>
-              <select className="w-full p-3 border border-gray-300 rounded-lg text-sm">
-                <option>Selecione o assunto</option>
-                <option>Problema com pedido</option>
-                <option>Dúvida sobre pagamento</option>
-                <option>Problema com entrega</option>
-                <option>Produto com defeito</option>
-                <option>Outro</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Sua mensagem
-              </label>
-              <textarea
-                className="w-full p-3 border border-gray-300 rounded-lg h-24 text-sm resize-none"
-                placeholder="Descreva sua dúvida ou problema com detalhes..."
-              />
-            </div>
-
-            <button className="w-full bg-[#F8B075] hover:bg-[#F8B075]/90 text-white font-semibold py-3 rounded-lg">
-              Enviar Mensagem
-            </button>
-          </div>
+          <ContactSupportForm userEmail={user.email} userName={user.name} />
 
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-start space-x-2">
@@ -105,7 +78,7 @@ export default async function AjudaPage() {
             {/* Pedidos e Entrega */}
             <div className="space-y-2">
               <h3 className="font-medium text-sm text-gray-600 uppercase tracking-wide">
-                📦 Pedidos e Entrega
+                Pedidos e Entrega
               </h3>
 
               <details className="rounded-xl border p-3">
@@ -157,7 +130,7 @@ export default async function AjudaPage() {
             {/* Pagamento */}
             <div className="space-y-2">
               <h3 className="font-medium text-sm text-gray-600 uppercase tracking-wide">
-                💳 Pagamento
+                Pagamento
               </h3>
 
               <details className="rounded-xl border p-3">
@@ -197,7 +170,7 @@ export default async function AjudaPage() {
             {/* Produtos */}
             <div className="space-y-2">
               <h3 className="font-medium text-sm text-gray-600 uppercase tracking-wide">
-                🛒 Produtos
+                Produtos
               </h3>
 
               <details className="rounded-xl border p-3">
@@ -236,7 +209,7 @@ export default async function AjudaPage() {
             {/* Conta e Perfil */}
             <div className="space-y-2">
               <h3 className="font-medium text-sm text-gray-600 uppercase tracking-wide">
-                👤 Conta e Perfil
+                Conta e Perfil
               </h3>
 
               <details className="rounded-xl border p-3">
@@ -275,7 +248,7 @@ export default async function AjudaPage() {
             {/* Problemas Técnicos */}
             <div className="space-y-2">
               <h3 className="font-medium text-sm text-gray-600 uppercase tracking-wide">
-                🔧 Problemas Técnicos
+                Problemas Técnicos
               </h3>
 
               <details className="rounded-xl border p-3">

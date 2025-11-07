@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function EditarPerfilPage() {
   const { data: session, status } = useSession();
@@ -15,9 +16,7 @@ export default function EditarPerfilPage() {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    phone: "",
-    email: "",
-    document: "",
+    useDeliveryForBilling: true,
   });
 
   useEffect(() => {
@@ -34,9 +33,10 @@ export default function EditarPerfilPage() {
         setUser(userData);
         setFormData({
           name: userData.name || "",
-          phone: userData.phone ? formatPhone(userData.phone) : "+55",
-          email: userData.email || "",
-          document: userData.document || "",
+          useDeliveryForBilling:
+            userData.useDeliveryForBilling === undefined
+              ? true
+              : userData.useDeliveryForBilling,
         });
       }
     } catch (error) {
@@ -66,42 +66,6 @@ export default function EditarPerfilPage() {
       alert("Erro ao atualizar perfil");
     } finally {
       setSaving(false);
-    }
-  };
-
-  const formatCPF = (value: string) => {
-    return value
-      .replace(/\D/g, "")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-  };
-
-  const formatPhone = (value: string) => {
-    // Remove tudo que não é número
-    const numbers = value.replace(/\D/g, "");
-
-    // Se não começar com 55, adiciona automaticamente
-    let phone = numbers;
-    if (!phone.startsWith("55")) {
-      phone = "55" + phone;
-    }
-
-    // Limita a 13 dígitos (55 + 11 dígitos do celular)
-    phone = phone.substring(0, 13);
-
-    // Formata: +55 (11) 99999-9999
-    if (phone.length <= 2) {
-      return "+55";
-    } else if (phone.length <= 4) {
-      return `+55 (${phone.substring(2)})`;
-    } else if (phone.length <= 9) {
-      return `+55 (${phone.substring(2, 4)}) ${phone.substring(4)}`;
-    } else {
-      return `+55 (${phone.substring(2, 4)}) ${phone.substring(
-        4,
-        9
-      )}-${phone.substring(9)}`;
     }
   };
 
@@ -142,8 +106,8 @@ export default function EditarPerfilPage() {
         </div>
 
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <div className="space-y-4">
-            <div>
+          <div className="space-y-6">
+            <div className="space-y-2">
               <Label
                 htmlFor="name"
                 className="text-sm font-medium text-gray-700"
@@ -159,71 +123,64 @@ export default function EditarPerfilPage() {
                 className="mt-1"
                 placeholder="Seu nome completo"
               />
+              <p className="text-xs text-gray-500">
+                Esse é o único dado pessoal que pode ser editado por aqui. Para
+                alterar outros dados, fale com o suporte.
+              </p>
             </div>
 
-            <div>
-              <Label
-                htmlFor="phone"
-                className="text-sm font-medium text-gray-700"
-              >
-                Telefone
-              </Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    phone: formatPhone(e.target.value),
-                  })
-                }
-                className="mt-1"
-                placeholder="+55 (11) 99999-9999"
-              />
-            </div>
-
-            <div>
-              <Label
-                htmlFor="email"
-                className="text-sm font-medium text-gray-700"
-              >
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-gray-700">
                 E-mail
               </Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                className="mt-1"
-                placeholder="seu@email.com"
-              />
+              <p className="text-sm text-gray-600 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2">
+                {user?.email ?? "-"}
+              </p>
             </div>
 
-            <div>
-              <Label
-                htmlFor="document"
-                className="text-sm font-medium text-gray-700"
-              >
-                CPF
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-gray-700">
+                Documento
               </Label>
-              <Input
-                id="document"
-                value={formData.document}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    document: formatCPF(e.target.value),
-                  })
-                }
-                className="mt-1"
-                placeholder="000.000.000-00"
-                maxLength={14}
-              />
+              <p className="text-sm text-gray-600 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2">
+                {user?.document ?? "Informe-nos para emissão de nota fiscal"}
+              </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-4">
+            <div className="rounded-xl border border-gray-200 p-4 space-y-3">
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-gray-800">
+                  Preferências de faturamento
+                </p>
+                <p className="text-xs text-gray-500">
+                  Utilize o endereço informado na entrega para gerar notas
+                  fiscais automaticamente.
+                </p>
+              </div>
+              <label className="flex items-start gap-3">
+                <Checkbox
+                  checked={formData.useDeliveryForBilling}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      useDeliveryForBilling: e.target.checked,
+                    })
+                  }
+                  aria-label="Usar endereço de entrega para faturamento"
+                />
+                <div className="space-y-1">
+                  <span className="text-sm font-medium text-gray-700">
+                    Usar endereço da entrega para faturamento
+                  </span>
+                  <p className="text-xs text-gray-500">
+                    Se desmarcar, você poderá informar um endereço específico
+                    durante o pagamento.
+                  </p>
+                </div>
+              </label>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
               <Link
                 href="/perfil/editar/senha"
                 className="px-4 py-3 text-center text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"

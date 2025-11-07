@@ -69,7 +69,7 @@ export default function PixPayment({
     setLoading(true);
     try {
       console.log("🔄 Iniciando pagamento PIX...");
-      console.log("📦 Items:", items);
+      console.log(" Items:", items);
       console.log("📍 Endereço:", deliveryAddress);
       console.log("🚚 Frete:", shippingInfo);
 
@@ -209,7 +209,7 @@ export default function PixPayment({
               }}
               className="w-full bg-sol-orange hover:bg-sol-orange-dark text-white font-semibold py-3"
             >
-              📋 Copiar Código PIX
+              Copiar Código PIX
             </Button>
             <p className="sol-text-secondary text-xs text-center">
               Cole este código no app do seu banco para pagar
@@ -220,7 +220,10 @@ export default function PixPayment({
         {/* Order Info */}
         <div className="bg-gray-50 rounded-lg p-4 text-center space-y-2">
           <p className="text-gray-700 font-semibold">
-            Valor: <span className="text-sol-orange">R$ {pixData.total.toFixed(2)}</span>
+            Valor:{" "}
+            <span className="text-sol-orange">
+              R$ {pixData.total.toFixed(2)}
+            </span>
           </p>
           <p className="text-gray-600 text-sm">
             Expira em: {Math.floor((pixData.expiresIn || 1800) / 60)} minutos
@@ -235,7 +238,8 @@ export default function PixPayment({
               Aguardando confirmação do pagamento...
             </p>
             <p className="text-blue-600 text-xs mt-2">
-              Pague o PIX e aguarde alguns instantes. Você será redirecionado automaticamente.
+              Pague o PIX e aguarde alguns instantes. Você será redirecionado
+              automaticamente.
             </p>
           </div>
         )}

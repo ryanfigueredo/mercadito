@@ -6,11 +6,13 @@ import { CreditCard, Plus } from "lucide-react";
 interface AddCardFormProps {
   onCardAdded: () => void;
   onCancel: () => void;
+  compact?: boolean;
 }
 
 export default function AddCardForm({
   onCardAdded,
   onCancel,
+  compact = false,
 }: AddCardFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -88,16 +90,27 @@ export default function AddCardForm({
     }
   };
 
+  const containerClasses = compact
+    ? "p-3 border rounded-xl bg-white shadow-sm"
+    : "p-4 border rounded-xl bg-gray-50";
+  const sectionSpacing = compact ? "space-y-3" : "space-y-4";
+  const inputPadding = compact ? "p-2.5" : "p-3";
+  const buttonPadding = compact ? "py-2.5" : "py-3";
+  const iconWrapperClass = `${compact ? "w-7 h-7" : "w-8 h-8"} bg-[#F8B075] rounded-lg flex items-center justify-center`;
+  const gridGap = compact ? "gap-3" : "gap-4";
+
   return (
-    <div className="p-4 border rounded-xl bg-gray-50">
-      <div className="flex items-center space-x-2 mb-4">
-        <div className="w-8 h-8 bg-[#F8B075] rounded-lg flex items-center justify-center">
-          <Plus className="w-4 h-4 text-white" />
+    <div className={containerClasses}>
+      <div className="flex items-center space-x-2 mb-3">
+        <div className={iconWrapperClass}>
+          <Plus className={compact ? "w-3.5 h-3.5 text-white" : "w-4 h-4 text-white"} />
         </div>
-        <h3 className="font-semibold text-gray-900">Adicionar Cartão</h3>
+        <h3 className="font-semibold text-gray-900 text-sm">
+          Adicionar Cartão
+        </h3>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className={sectionSpacing}>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Número do Cartão
@@ -113,7 +126,7 @@ export default function AddCardForm({
             }
             placeholder="1234 5678 9012 3456"
             maxLength={19}
-            className="w-full p-3 border border-gray-300 rounded-lg text-sm"
+            className={`w-full ${inputPadding} border border-gray-300 rounded-lg text-sm`}
             required
           />
         </div>
@@ -132,12 +145,12 @@ export default function AddCardForm({
               })
             }
             placeholder="NOME COMO NO CARTÃO"
-            className="w-full p-3 border border-gray-300 rounded-lg text-sm"
+            className={`w-full ${inputPadding} border border-gray-300 rounded-lg text-sm`}
             required
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className={`grid grid-cols-2 ${gridGap}`}>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Validade (MM/AA)
@@ -160,7 +173,7 @@ export default function AddCardForm({
               }}
               placeholder="MM/AA"
               maxLength={5}
-              className="w-full p-3 border border-gray-300 rounded-lg text-sm"
+              className={`w-full ${inputPadding} border border-gray-300 rounded-lg text-sm`}
               required
             />
           </div>
@@ -180,13 +193,13 @@ export default function AddCardForm({
               }
               placeholder="123"
               maxLength={3}
-              className="w-full p-3 border border-gray-300 rounded-lg text-sm"
+              className={`w-full ${inputPadding} border border-gray-300 rounded-lg text-sm`}
               required
             />
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className={`flex items-center space-x-2 ${compact ? "mt-1" : ""}`}>
           <input
             type="checkbox"
             id="isDefault"
@@ -201,18 +214,18 @@ export default function AddCardForm({
           </label>
         </div>
 
-        <div className="flex space-x-3 pt-2">
+        <div className={`flex space-x-3 ${compact ? "pt-1" : "pt-2"}`}>
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+            className={`flex-1 px-4 ${buttonPadding} border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors`}
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex-1 px-4 py-3 bg-[#F8B075] text-white font-medium rounded-lg hover:bg-[#F8B075]/90 disabled:opacity-50 transition-colors"
+            className={`flex-1 px-4 ${buttonPadding} bg-[#F8B075] text-white font-medium rounded-lg hover:bg-[#F8B075]/90 disabled:opacity-50 transition-colors`}
           >
             {isSubmitting ? "Adicionando..." : "Adicionar Cartão"}
           </button>
