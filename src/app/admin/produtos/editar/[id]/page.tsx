@@ -55,6 +55,18 @@ export default function EditarProdutoPage({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Normaliza para "Title Case" (pt-BR): cada palavra com a primeira letra maiúscula
+  function toTitleCase(input: string) {
+    return input
+      .split(" ")
+      .filter(Boolean)
+      .map((word) => {
+        const lower = word.toLocaleLowerCase("pt-BR");
+        return lower.charAt(0).toLocaleUpperCase("pt-BR") + lower.slice(1);
+      })
+      .join(" ");
+  }
+
   async function loadProduct() {
     try {
       const res = await fetch(`/api/admin/products`);
@@ -115,7 +127,7 @@ export default function EditarProdutoPage({
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.name.trim(),
+          name: toTitleCase(formData.name.trim()),
           category: formData.category,
           priceCents: Math.round(parseFloat(formData.price) * 100),
           stock: parseInt(formData.stock),
@@ -337,6 +349,12 @@ export default function EditarProdutoPage({
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
+                }
+                onBlur={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    name: toTitleCase(e.target.value),
+                  }))
                 }
                 placeholder="Ex: Arroz Camil 5kg"
                 className={errors.name ? "border-red-500" : ""}

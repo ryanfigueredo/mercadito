@@ -25,6 +25,18 @@ export default function NewProductPage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
+  // Normaliza para "Title Case" (pt-BR): cada palavra com a primeira letra maiúscula
+  function toTitleCase(input: string) {
+    return input
+      .split(" ")
+      .filter(Boolean)
+      .map((word) => {
+        const lower = word.toLocaleLowerCase("pt-BR");
+        return lower.charAt(0).toLocaleUpperCase("pt-BR") + lower.slice(1);
+      })
+      .join(" ");
+  }
+
   // Upload de imagem antes de criar o produto
   const handleImageSelect = async (file: File) => {
     // Validar tipo
@@ -107,12 +119,16 @@ export default function NewProductPage() {
     setSaving(true);
 
     try {
+      // Garantir padronização do nome
+      const normalizedName = toTitleCase(form.name);
+
       // Criar o produto (com ou sem imagem)
       const response = await fetch("/api/admin/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          name: normalizedName,
           price: Number(form.price.replace(",", ".")),
           imageUrl: imageUrl || undefined,
           stock: 0, // Estoque inicia em 0
@@ -220,6 +236,9 @@ export default function NewProductPage() {
                   placeholder="Ex: Arroz Camil 5kg"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  onBlur={(e) =>
+                    setForm((prev) => ({ ...prev, name: toTitleCase(e.target.value) }))
+                  }
                   required
                   className="h-11"
                 />
