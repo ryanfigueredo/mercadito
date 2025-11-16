@@ -12,6 +12,18 @@ const bodySchema = z.object({
   stock: z.number().int().min(0).optional(),
 });
 
+// Normaliza para "Title Case" (pt-BR): cada palavra com a primeira letra maiúscula
+function toTitleCase(input: string) {
+  return input
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => {
+      const lower = word.toLocaleLowerCase("pt-BR");
+      return lower.charAt(0).toLocaleUpperCase("pt-BR") + lower.slice(1);
+    })
+    .join(" ");
+}
+
 export async function GET() {
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
@@ -30,11 +42,12 @@ export async function POST(req: NextRequest) {
       );
     }
     const p = parsed.data;
+    const normalizedName = toTitleCase(p.name.trim());
     const created = await prisma.product.upsert({
       where: { slug: p.slug },
       create: {
         slug: p.slug,
-        name: p.name,
+        name: normalizedName,
         category: p.category,
         priceCents: Math.round(p.price * 100),
         imageUrl: p.imageUrl,
@@ -42,7 +55,7 @@ export async function POST(req: NextRequest) {
         stock: p.stock ?? 0, // Estoque inicia em 0 se não informado
       },
       update: {
-        name: p.name,
+        name: normalizedName,
         category: p.category,
         priceCents: Math.round(p.price * 100),
         imageUrl: p.imageUrl,

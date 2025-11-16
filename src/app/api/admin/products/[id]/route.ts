@@ -7,6 +7,18 @@ import { createErrorResponse } from "@/lib/dto-validators";
 import { handleDatabaseError, withRetry } from "@/lib/db-error-handler";
 import type { ProductResponseDTO } from "@/types/dto";
 
+// Normaliza para "Title Case" (pt-BR): cada palavra com a primeira letra maiúscula
+function toTitleCase(input: string) {
+  return input
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => {
+      const lower = word.toLocaleLowerCase("pt-BR");
+      return lower.charAt(0).toLocaleUpperCase("pt-BR") + lower.slice(1);
+    })
+    .join(" ");
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -45,7 +57,7 @@ export async function PATCH(
           { status: 400 }
         );
       }
-      updateData.name = body.name.trim();
+      updateData.name = toTitleCase(body.name.trim());
     }
 
     if (body.category !== undefined) {
