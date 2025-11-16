@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
 
-    const { items, cardData, deliveryAddress, shippingInfo } =
+    const { items, cardToken, installments, deliveryAddress, shippingInfo } =
       (await req.json()) as {
         items: Array<{
           id: string;
@@ -19,20 +19,8 @@ export async function POST(req: NextRequest) {
           price: number;
           quantity: number;
         }>;
-        cardData: {
-          number: string;
-          holderName: string;
-          expMonth: string;
-          expYear: string;
-          cvv: string;
-          installments: number;
-          billingAddress?: {
-            line1: string;
-            zipCode: string;
-            city: string;
-            state: string;
-          };
-        };
+        cardToken: string;
+        installments: number;
         deliveryAddress: {
           street: string;
           city: string;
@@ -54,9 +42,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!cardData) {
+    if (!cardToken) {
       return NextResponse.json(
-        { error: "dados do cartão obrigatórios" },
+        { error: "token do cartão obrigatório" },
         { status: 400 }
       );
     }
@@ -92,8 +80,8 @@ export async function POST(req: NextRequest) {
       itemsTotalAmount += amount * quantity;
     });
 
-    const freightAmount = (shippingInfo?.rateCents || 0) / 100; // Converter centavos para reais
-    const totalAmount = itemsTotalAmount + freightAmount;
+    const freightAmount = (shippingInfo?.rateCents || 0) / 100; // em reais
+    const totalAmount = itemsTotalAmount + freightAmount; // em reais
 
     // Buscar produtos no banco usando os slugs do carrinho
     const productSlugs = items.map((item) => item.id);
@@ -158,34 +146,40 @@ export async function POST(req: NextRequest) {
     const number = phone.substring(2);
 
     // Criar pagamento no Mercado Pago seguindo a documentação oficial
-    const mercadoPagoClient = getMercadoPagoClient();
-
-    const paymentData = {
-      transaction_amount: totalCents / 100,
-      description: `Pedido ${order.id}`,
-      payment_method_id: "credit_card",
-      payer: {
-        email: user.email,
-        identification: {
-          type: "CPF",
-          number: user.document.replace(/\D/g, ""),
+    const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: "MERCADOPAGO_ACCESS_TOKEN não configurado" },
+        { status: 500 }
+      );
+    }
+    const mp = new MercadoPagoConfig({ accessToken });
+    const paymentClient = new Payment(mp);
+    const payment = await paymentClient.create({
+      body: {
+        transaction_amount: Number(totalAmount.toFixed(2)), // em reais
+        description: `Pedido ${order.id}`,
+        payment_method_id: "credit_card",
+        installments: Math.max(1, Number(installments || 1)),
+        token: cardToken,
+        payer: {
+          email: user.email!,
+          identification: {
+            type: "CPF",
+            number: user.document!.replace(/\D/g, ""),
+          },
+          first_name: user.name?.split(" ")[0] || "",
+          last_name: user.name?.split(" ").slice(1).join(" ") || "",
+          phone: phone
+            ? {
+                area_code: areaCode,
+                number: number,
+              }
+            : undefined,
         },
-        first_name: user.name.split(" ")[0],
-        last_name: user.name.split(" ").slice(1).join(" ") || "",
-        phone: phone
-          ? {
-              area_code: areaCode,
-              number: number,
-            }
-          : undefined,
+        external_reference: order.id,
       },
-      installments: cardData.installments,
-      token: cardData.number.replace(/\s/g, ""),
-      issuer_id: undefined,
-      external_reference: order.id, // Referência externa para sincronização
-    };
-
-    const payment = await mercadoPagoClient.createPayment(paymentData);
+    });
 
     // Atualizar pedido com ID do pagamento
     await prisma.order.update({
@@ -201,8 +195,8 @@ export async function POST(req: NextRequest) {
       paymentId: payment.id,
       status: payment.status,
       statusDetail: payment.status_detail,
-      total: totalCents / 100,
-      installments: payment.installments,
+      total: totalAmount,
+      installments: (payment as any).installments,
     });
   } catch (error: unknown) {
     console.error("Erro no checkout cartão Mercado Pago:", error);

@@ -106,6 +106,45 @@ export default function CreditCardPayment({
     onProcessingChange?.(true);
 
     try {
+      // 1) Obter public key
+      const pkRes = await fetch("/api/checkout/mp-public-key");
+      const { publicKey } = await pkRes.json();
+      if (!pkRes.ok || !publicKey) {
+        throw new Error("Chave pública do Mercado Pago não configurada");
+      }
+
+      // 2) Carregar SDK v2 se necessário
+      async function loadMPSdk(): Promise<any> {
+        if ((window as any).MercadoPago) return (window as any).MercadoPago;
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://sdk.mercadopago.com/js/v2";
+          script.async = true;
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error("Falha ao carregar SDK"));
+          document.body.appendChild(script);
+        });
+        return (window as any).MercadoPago;
+      }
+
+      const MP = await loadMPSdk();
+      const mp = new MP(publicKey);
+
+      // 3) Criar token do cartão (nunca enviar os dados crus para o backend)
+      const tokenResult = await mp.cardToken.create({
+        cardNumber: cardData.number.replace(/\s/g, ""),
+        cardholderName: cardData.holderName,
+        securityCode: cardData.cvv,
+        cardExpirationMonth: cardData.expMonth,
+        cardExpirationYear: cardData.expYear,
+        identificationType: "CPF",
+        identificationNumber: "", // opcional aqui; CPF vai no backend pelo usuário
+      });
+
+      if (!tokenResult || !tokenResult.id) {
+        throw new Error("Não foi possível tokenizar o cartão");
+      }
+
       const response = await fetch("/api/checkout/mercadopago-credit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -118,20 +157,8 @@ export default function CreditCardPayment({
           })),
           deliveryAddress,
           shippingInfo,
-          cardData: {
-            number: cardData.number.replace(/\s/g, ""),
-            holderName: cardData.holderName,
-            expMonth: cardData.expMonth,
-            expYear: cardData.expYear,
-            cvv: cardData.cvv,
-            installments: cardData.installments,
-            billingAddress: {
-              line1: "Endereço de cobrança",
-              zipCode: cardData.zipCode,
-              city: cardData.city,
-              state: cardData.state,
-            },
-          },
+          cardToken: tokenResult.id,
+          installments: cardData.installments,
         }),
       });
 
