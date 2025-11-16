@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -80,7 +80,7 @@ export default function NewProductPage() {
   // Obs.: o upload efetivo ocorre após criar o produto (já suportado no submit)
   // ou se o usuário fizer upload manual usando o componente de upload posterior.
   // Aqui só criamos o preview e armazenamos o arquivo selecionado.
-  React.useEffect(() => {
+  useEffect(() => {
     function onPaste(e: any) {
       const items = e?.clipboardData?.items || [];
       for (let i = 0; i < items.length; i++) {
