@@ -198,6 +198,34 @@ export default function EditarProdutoPage({
     }
   };
 
+  // Permitir colar imagem do clipboard (Ctrl/Cmd+V) e enviar para S3
+  useEffect(() => {
+    function onPaste(e: any) {
+      if (uploadingImage) return;
+      const items = e?.clipboardData?.items || [];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (
+          item &&
+          typeof item.type === "string" &&
+          item.type.startsWith("image/")
+        ) {
+          const blob: File | null = item.getAsFile();
+          if (blob) {
+            const file = new File([blob], "clipboard-image.png", {
+              type: blob.type || "image/png",
+            });
+            handleImageUpload(file);
+            e.preventDefault?.();
+            break;
+          }
+        }
+      }
+    }
+    window.addEventListener("paste", onPaste as any);
+    return () => window.removeEventListener("paste", onPaste as any);
+  }, [uploadingImage]);
+
   useEffect(() => {
     loadProduct();
   }, [resolvedParams.id]);
@@ -284,7 +312,8 @@ export default function EditarProdutoPage({
             </div>
 
             <p className="text-xs text-gray-500 text-center">
-              Clique na imagem para alterar
+              Clique na imagem para alterar, arraste um arquivo ou cole
+              (Ctrl/Cmd+V)
               <br />
               Máximo 5MB • JPG, PNG, WebP
             </p>

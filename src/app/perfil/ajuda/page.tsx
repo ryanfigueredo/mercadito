@@ -27,7 +27,7 @@ export default async function AjudaPage() {
   return (
     <div className="min-h-dvh">
       <Topbar isLogged={!!user} address={addressLine} />
-      <main className="mx-auto max-w-sm px-4 py-6">
+      <main className="mx-auto max-w-sm px-4 py-6 pb-28">
         <div className="flex items-center justify-between mb-3">
           <h1 className="h-title">Ajuda e Suporte</h1>
           <Link href="/perfil" className="text-sm text-black font-semibold">
@@ -40,6 +40,9 @@ export default async function AjudaPage() {
           <p className="text-sm text-muted mb-4">
             Não encontrou sua dúvida? Escreva abaixo e nossa equipe te ajudará
             em até 2 horas.
+          </p>
+          <p className="text-xs text-muted mb-4">
+            Mercadito • contato@mercadito.com.br • WhatsApp: (75) 99945-6200
           </p>
 
           <ContactSupportForm userEmail={user.email} userName={user.name} />

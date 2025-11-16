@@ -3,6 +3,7 @@
 Uma loja online pensada para mercearias de bairro: rápido no celular, simples para o cliente e prático para o lojista. Desenvolvi o projeto inteiro com Next.js (App Router), autenticação segura, carrinho persistente e checkout integrado ao Mercado Pago (PIX com QR na tela e cartão). No painel admin, dá para cadastrar produtos com upload de imagem (S3), gerenciar estoque e configurar frete dinâmico.
 
 ### Principais recursos
+
 - Autenticação com verificação de e-mail e recuperação de senha
 - Carrinho e checkout com Mercado Pago (PIX integrado na página e cartão de crédito)
 - Webhook do Mercado Pago com verificação de assinatura
@@ -14,6 +15,7 @@ Uma loja online pensada para mercearias de bairro: rápido no celular, simples p
 - Layout mobile-first com barra inferior fixa (sem encobrir conteúdo)
 
 ### Stack
+
 - Next.js 15 (App Router, React 19) + TypeScript
 - Prisma ORM + PostgreSQL
 - NextAuth para sessão/autenticação
@@ -26,11 +28,12 @@ Uma loja online pensada para mercearias de bairro: rápido no celular, simples p
 
 ## Como rodar localmente
 
-1) Requisitos
+1. Requisitos
+
 - Node.js 18+
 - PostgreSQL rodando e acessível (DATABASE_URL)
 
-2) Variáveis de ambiente (.env)
+2. Variáveis de ambiente (.env)
 
 Crie um arquivo `.env` na raiz com:
 
@@ -57,17 +60,20 @@ AWS_S3_BUCKET="nome-do-bucket"
 RESEND_API_KEY="re_xxx"
 ```
 
-3) Instalar e preparar
+3. Instalar e preparar
+
 ```
 yarn
 yarn prisma migrate dev
 yarn dev
 ```
+
 O app sobe em http://localhost:3000
 
-4) Tornar um usuário admin (acesso ao painel `/admin`)
+4. Tornar um usuário admin (acesso ao painel `/admin`)
 
 Depois de se cadastrar pela interface, rode:
+
 ```
 node make-admin.js seu-email@exemplo.com
 ```
@@ -82,6 +88,7 @@ node make-admin.js seu-email@exemplo.com
 - Webhook: rota segura com verificação de assinatura para processar eventos de pagamento/atualização.
 
 Configuração do Webhook no Mercado Pago:
+
 - URL: `https://SEU_DOMINIO/api/checkout/mercadopago-webhook`
 - Eventos: Pagamentos (e Orders se desejar acompanhar preferências)
 - Assinatura secreta: usar o valor de `MERCADOPAGO_WEBHOOK_SECRET`
@@ -89,6 +96,7 @@ Configuração do Webhook no Mercado Pago:
 ---
 
 ## Admin
+
 - Produtos: criação/edição, upload de imagens para S3, preço, estoque, categoria, etc.
 - Estoque: ajuste rápido e indicadores visuais.
 - Frete: página para configurar endereço/base da loja, CEP e faixas de preço por distância/valor (persistido em banco via `ShippingConfig`).
@@ -96,12 +104,14 @@ Configuração do Webhook no Mercado Pago:
 ---
 
 ## Modelagem e dados
+
 - Prisma com PostgreSQL (migrations versionadas em `prisma/migrations`).
 - Recursos adicionais:
   - `EmailVerification` para fluxo de verificação (código de 6 dígitos, expiração, tentativas, etc.).
   - `ShippingConfig` para frete com versionamento (sempre uma configuração ativa).
 
 Comandos úteis do Prisma:
+
 ```
 yarn prisma generate
 yarn prisma migrate dev
@@ -111,18 +121,21 @@ yarn prisma studio
 ---
 
 ## Infra e mídia
+
 - Upload de imagens via componente no admin, enviando para AWS S3 com presign.
 - Otimização de UI para mobile; padding global para não ser encoberto pela bottom bar.
 
 ---
 
 ## E-mails
+
 - Envio via Resend (templates HTML simples).
 - Fluxo de verificação de e-mail em 2 etapas e reset de senha com mensagens claras de erro (ex.: “Usuário não encontrado”).
 
 ---
 
 ## Scripts e build
+
 ```
 yarn dev       # desenvolvimento
 yarn build     # prisma generate + next build
@@ -134,17 +147,20 @@ Deploy recomendado: Vercel (com as variáveis de ambiente configuradas e o webho
 ---
 
 ## O que não tem (e por quê)
+
 - Pagar.me e integrações legadas foram removidas para manter o escopo enxuto e focado em Mercado Pago.
 - Rotas de “reset de banco” de desenvolvimento foram desativadas/remoções para segurança em produção.
 
 ---
 
 ## Uso de IA
+
 Não há uso de bibliotecas, SDKs ou APIs de Inteligência Artificial no código. Toda a lógica de negócio (checkout, webhook, e-mail, frete, admin, etc.) foi implementada manualmente.
 
 ---
 
 ## Roadmap curto
+
 - Cupons de desconto
 - Relatórios de vendas no admin
 - Avaliações de produtos
@@ -152,6 +168,5 @@ Não há uso de bibliotecas, SDKs ou APIs de Inteligência Artificial no código
 ---
 
 ## Licença
-Projeto de portfólio. Uso livre para estudo e inspiração.
 
-
+Projeto da DMTN Sistemas

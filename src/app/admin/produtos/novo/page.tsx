@@ -76,6 +76,32 @@ export default function NewProductPage() {
     }
   };
 
+  // Permite colar imagem do clipboard (Ctrl/Cmd+V) e usar o mesmo fluxo de preview/upload
+  // Obs.: o upload efetivo ocorre após criar o produto (já suportado no submit)
+  // ou se o usuário fizer upload manual usando o componente de upload posterior.
+  // Aqui só criamos o preview e armazenamos o arquivo selecionado.
+  React.useEffect(() => {
+    function onPaste(e: any) {
+      const items = e?.clipboardData?.items || [];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item && typeof item.type === "string" && item.type.startsWith("image/")) {
+          const blob: File | null = item.getAsFile();
+          if (blob) {
+            const file = new File([blob], "clipboard-image.png", {
+              type: blob.type || "image/png",
+            });
+            handleImageSelect(file);
+            e.preventDefault?.();
+            break;
+          }
+        }
+      }
+    }
+    window.addEventListener("paste", onPaste as any);
+    return () => window.removeEventListener("paste", onPaste as any);
+  }, []);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -344,7 +370,7 @@ export default function NewProductPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-700">
-                      Clique para fazer upload ou arraste uma imagem
+                      Clique para fazer upload, arraste uma imagem ou cole (Ctrl/Cmd+V)
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
                       PNG, JPG ou GIF até 5MB
