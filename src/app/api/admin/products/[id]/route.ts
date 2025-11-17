@@ -8,12 +8,57 @@ import { handleDatabaseError, withRetry } from "@/lib/db-error-handler";
 import type { ProductResponseDTO } from "@/types/dto";
 
 // Normaliza para "Title Case" (pt-BR): cada palavra com a primeira letra maiúscula
+// Mantém preposições e unidades de medida em minúsculas
 function toTitleCase(input: string) {
+  // Preposições e artigos que devem ficar em minúsculas
+  const lowercaseWords = [
+    "de", "da", "do", "das", "dos", "e", "em", "no", "na", "nas", "nos",
+    "com", "por", "para", "a", "ao", "aos", "às", "ou", "que", "se", "um", "uma", "uns", "umas"
+  ];
+  
+  // Unidades de medida que devem ficar em minúsculas
+  const units = ["kg", "g", "mg", "ml", "l", "lt", "lts", "cm", "m", "mm", "un", "unidades", "cx", "caixa", "pct", "pacote"];
+  
   return input
+    .trim()
     .split(" ")
     .filter(Boolean)
-    .map((word) => {
+    .map((word, index) => {
       const lower = word.toLocaleLowerCase("pt-BR");
+      const lowerClean = lower.replace(/[.,;!?]/g, ""); // Remove pontuação para verificação
+      
+      // Verifica se é número seguido de unidade (ex: "500ML", "5KG")
+      const numberUnitMatch = lower.match(/^(\d+)([a-z]+)$/);
+      if (numberUnitMatch) {
+        const [, number, unitPart] = numberUnitMatch;
+        // Verifica se a parte após o número é uma unidade conhecida
+        const unitMatch = units.find(u => unitPart === u || unitPart.startsWith(u));
+        if (unitMatch && unitPart.length <= 4) { // Limita tamanho para evitar falsos positivos
+          return number + unitMatch;
+        }
+      }
+      
+      // Primeira palavra sempre capitaliza (exceto se for número)
+      if (index === 0 && !/^\d/.test(word)) {
+        return lower.charAt(0).toLocaleUpperCase("pt-BR") + lower.slice(1);
+      }
+      
+      // Verifica se é apenas número (mantém como está)
+      if (/^\d+$/.test(word)) {
+        return word;
+      }
+      
+      // Verifica se é unidade de medida isolada (mantém minúscula)
+      if (units.includes(lowerClean)) {
+        return lower;
+      }
+      
+      // Verifica se é preposição (mantém minúscula, exceto se for a primeira palavra)
+      if (lowercaseWords.includes(lowerClean) && index > 0) {
+        return lower;
+      }
+      
+      // Demais palavras: primeira letra maiúscula
       return lower.charAt(0).toLocaleUpperCase("pt-BR") + lower.slice(1);
     })
     .join(" ");
